@@ -1,0 +1,233 @@
+# PostIA — Plan de Negocio
+
+> Bot de WhatsApp con IA que transforma fotos de platos y productos en contenido profesional listo para publicar.
+
+---
+
+## La Idea
+
+Bot de WhatsApp que recibe una foto + descripción de un plato o producto y devuelve automáticamente una **imagen mejorada con IA + descripción lista para publicar**, optimizada según la plataforma elegida. El cliente paga suscripción mensual vía MercadoPago.
+
+---
+
+## Experiencia del Usuario
+
+1. Abre WhatsApp
+2. Saca foto del plato/producto con el celu
+3. Manda la foto con texto: `"asado de tira con chimichurri"`
+4. Bot pregunta: _"¿Dónde vas a publicar?"_
+   - 1️⃣ Instagram
+   - 2️⃣ Mercado Libre
+   - 3️⃣ Facebook
+   - 4️⃣ Todos
+5. Cliente responde `"4"`
+6. En 30 segundos recibe todo listo para publicar
+
+**Sin apps, sin logins, sin complicaciones.**
+
+---
+
+## Lo que Devuelve el Bot por Plataforma
+
+| Plataforma    | Imagen                         | Descripción                               |
+|---------------|--------------------------------|-------------------------------------------|
+| Instagram     | 1080x1080 cuadrada             | Corta, emojis, hashtags                   |
+| Mercado Libre | Fondo blanco profesional       | Título SEO + bullet points técnicos       |
+| Facebook      | 1200x630 horizontal            | Más larga, tono familiar, precio incluido |
+
+---
+
+## Flujo Técnico Completo
+
+```
+Cliente manda foto + descripción por WhatsApp
+        ↓
+Webhook recibe (Twilio / Meta WhatsApp API)
+        ↓
+Bot pregunta plataforma destino
+        ↓
+Cliente elige (Instagram / ML / Facebook / Todos)
+        ↓
+Backend llama OpenAI API (DALL-E + GPT-4)
+        ↓
+Genera imagen optimizada por plataforma + descripción
+        ↓
+Bot devuelve todo al cliente automáticamente
+        ↓
+Cliente copia y pega directo
+```
+
+---
+
+## Flujo de Cobro
+
+```
+Bot detecta suscripción vencida
+        ↓
+Manda mensaje automático:
+"Tu plan venció 🔴 Renovalo acá para seguir:"
+[Link MercadoPago]
+        ↓
+Cliente paga en 2 minutos
+        ↓
+MercadoPago notifica backend (webhook)
+        ↓
+Bot se reactiva automáticamente
+```
+
+---
+
+## Planes y Precios
+
+| Plan     | Plataformas    | Imágenes/mes | Precio        |
+|----------|----------------|--------------|---------------|
+| Starter  | 1 plataforma   | 20           | $8 USD/mes    |
+| Standard | 2 plataformas  | 50           | $18 USD/mes   |
+| Pro      | Todas          | Ilimitado    | $35 USD/mes   |
+
+---
+
+## Stack Técnico
+
+| Componente    | Tecnología                   | Costo                     |
+|---------------|------------------------------|---------------------------|
+| Backend       | Spring Boot (Java)           | Gratis                    |
+| WhatsApp      | Twilio o Meta WhatsApp API   | ~$10 USD/mes              |
+| IA Imágenes   | OpenAI DALL-E API            | ~$0.05 por imagen         |
+| IA Texto      | OpenAI GPT-4 API             | ~$0.01 por descripción    |
+| Pagos         | MercadoPago Suscripciones    | % por transacción         |
+| Deploy        | Railway o Render             | Gratis para empezar       |
+
+---
+
+## Datos por Usuario en Backend
+
+```java
+{
+  whatsappNumber: "+5491112345678",
+  plan: "STANDARD",
+  plataformas: ["INSTAGRAM", "MERCADOLIBRE"],
+  imagenesUsadas: 12,
+  imagenesLimit: 50,
+  suscripcionActiva: true,
+  vencimiento: "2026-04-14"
+}
+```
+
+---
+
+## Tiempo de Desarrollo
+
+| Componente                        | Tiempo   |
+|-----------------------------------|----------|
+| Webhook WhatsApp                  | 1 día    |
+| Integración OpenAI                | 1 día    |
+| Lógica del flujo + plataformas    | 2 días   |
+| MercadoPago suscripción           | 1-2 días |
+| **Total**                         | **~1 semana** |
+
+---
+
+## Costos Mensuales Operativos
+
+| Herramienta              | Costo           |
+|--------------------------|-----------------|
+| Twilio WhatsApp API      | $10 USD         |
+| OpenAI API (100 imgs)    | $5 USD          |
+| Railway deploy           | Gratis          |
+| Meta Ads (publicidad)    | $30-50 USD      |
+| **Total**                | **~$45-65 USD/mes** |
+
+---
+
+## Rentabilidad
+
+```
+10 clientes plan Starter  → $80 USD  - $65 costos = $15 USD
+10 clientes plan Standard → $180 USD - $65 costos = $115 USD
+20 clientes plan Standard → $360 USD - $65 costos = $295 USD
+```
+
+---
+
+## Estrategia de Publicidad
+
+Antes de lanzar grabás un video:
+
+1. Foto fea de un plato
+2. La mandás al bot por WhatsApp
+3. En 30 segundos llega foto pro + descripción
+4. _"Probalo gratis 7 días"_
+
+**Ad en Instagram apuntando a:**
+- Dueños de restaurantes
+- Vendedores de Mercado Libre
+- Argentina, radio 50km de tu ciudad
+
+---
+
+## Identidad
+
+| Elemento        | Detalle                                           |
+|-----------------|---------------------------------------------------|
+| Nombre          | PostIA                                            |
+| Dominio         | postia.com.ar / postia.app                        |
+| Instagram       | @postia o @postia.ar                              |
+| WhatsApp        | PostIA Business                                   |
+| Logo concepto   | Cámara simple + rayo de velocidad                 |
+| Colores         | Naranja/blanco o verde/blanco (destacan en WA)    |
+
+---
+
+## Prompt Base del Bot
+
+```
+Tengo esta foto de [nombre del plato/producto].
+Plataforma destino: [Instagram / Mercado Libre / Facebook]
+
+1. Generá una imagen mejorada optimizada para [plataforma]:
+   - Instagram: cuadrada 1080x1080, iluminación cálida, fondo rústico
+   - Mercado Libre: fondo blanco profesional, producto centrado
+   - Facebook: horizontal 1200x630, composición apetitosa
+
+2. Escribí una descripción optimizada para [plataforma]:
+   - Instagram: máximo 3 líneas, emojis, 5 hashtags relevantes
+   - Mercado Libre: título SEO + bullet points con características
+   - Facebook: tono familiar argentino, precio si corresponde
+```
+
+---
+
+## Plan de Lanzamiento
+
+| Hito         | Acción                                              |
+|--------------|-----------------------------------------------------|
+| Semana 1     | MVP manual con vecino parrilla (gratis)             |
+| Semana 2     | Bot funcionando WhatsApp + OpenAI                   |
+| Semana 3     | MercadoPago integrado                               |
+| Semana 4     | Primeros 5 clientes pagando                         |
+| Mes 2        | Video antes/después para ads                        |
+| Mes 3        | 20+ clientes recurrentes                            |
+
+---
+
+## Checklist Próximos Pasos
+
+### Validación
+- [ ] Probar prompt con foto real de la parrilla del vecino
+- [ ] Validar que le gusta el resultado al dueño
+- [ ] Ofrecerle el servicio manual gratis 1 semana
+
+### Identidad
+- [ ] Registrar @postia en Instagram
+- [ ] Registrar postia.com.ar
+
+### Desarrollo
+- [ ] Armar webhook WhatsApp con Spring Boot
+- [ ] Integrar OpenAI API (imágenes + texto)
+- [ ] Lógica de plataformas (Instagram / ML / Facebook)
+- [ ] Integrar MercadoPago suscripciones
+
+### Go-to-market
+- [ ] Grabar video demo para ads
+- [ ] Conseguir 5 clientes piloto

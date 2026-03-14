@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PostIA — Fotos profesionales desde WhatsApp</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #262626;
+      --white: #fafafa;
+      --border: 1px solid #dbdbdb;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --shadow-md: 0 8px 40px rgba(0,0,0,0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+      /* IG gradient */
+      --ig: linear-gradient(135deg, #405de6 0%, #833ab4 25%, #c13584 50%, #e1306c 70%, #fcaf45 100%);
+      --ig-short: linear-gradient(135deg, #833ab4, #e1306c, #fcaf45);
+      --accent: #e1306c;
+      --accent2: #833ab4;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 40px;
+      border-bottom: var(--border);
+      background: rgba(250,250,250,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -1px;
+      background: var(--ig-short);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo span { background: none; -webkit-text-fill-color: inherit; }
+    .nav-links { display: flex; gap: 32px; font-size: 14px; font-weight: 500; }
+    .nav-links a { color: var(--black); transition: color 0.15s; }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      background: var(--ig);
+      color: white;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 24px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 12px rgba(225,48,108,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(225,48,108,0.45); }
+
+    /* ── HERO ── */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 88vh;
+      border-bottom: var(--border);
+    }
+    .hero-carousel { min-height: 0; }
+    .hero-left {
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: var(--border);
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      width: fit-content;
+      margin-bottom: 28px;
+      background: var(--ig);
+      color: white;
+      border-radius: 24px;
+    }
+    h1 {
+      font-size: clamp(42px, 5.5vw, 72px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -2.5px;
+      margin-bottom: 24px;
+      color: var(--black);
+    }
+    h1 .line-orange {
+      background: var(--ig-short);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 17px;
+      line-height: 1.65;
+      color: #8e8e8e;
+      max-width: 420px;
+      margin-bottom: 40px;
+    }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--ig);
+      color: white;
+      padding: 14px 30px;
+      border: none;
+      border-radius: 28px;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 4px 20px rgba(225,48,108,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(225,48,108,0.45); }
+    .btn-ghost {
+      background: white;
+      color: var(--black);
+      padding: 14px 30px;
+      border: var(--border);
+      border-radius: 28px;
+      font-weight: 700;
+      font-size: 15px;
+      transition: background 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .btn-ghost:hover { background: #f0f0f0; }
+    .hero-platforms {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: var(--border);
+    }
+    .hero-platforms i { font-size: 26px; }
+    .hero-platforms .fa-instagram { color: #c13584; }
+    .hero-platforms .fa-whatsapp { color: #25d366; }
+    .hero-platforms .fa-facebook { color: #1877f2; }
+    .hero-ml-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      background: #ffe600;
+      color: #333;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .hero-right {
+      background: linear-gradient(135deg, #f5f0ff 0%, #fff0f5 50%, #fff8f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 30px;
+      overflow: hidden;
+    }
+    /* hero carousel */
+    .hero-carousel {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-carousel-track {
+      display: flex;
+      height: 100%;
+      transition: transform 0.5s cubic-bezier(.77,0,.175,1);
+    }
+    .hero-carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .hero-carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .hero-slide-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 12px 20px;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: white;
+    }
+    .hero-slide-cat {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      background: var(--orange);
+      color: white;
+      padding: 3px 9px;
+      font-weight: 700;
+    }
+    .hero-carousel-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+    }
+    .hero-carousel-dots { display: flex; gap: 8px; }
+    .hero-carousel-dot {
+      width: 8px; height: 8px;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .hero-carousel-dot.active { background: white; border-color: white; }
+    .hero-carousel-arrows { display: flex; gap: 6px; }
+    .hero-carousel-btn {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-carousel-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── TICKER ── */
+    .ticker {
+      border-bottom: var(--border);
+      background: var(--ig);
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 11px 0;
+    }
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 22s linear infinite;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 1.5px;
+    }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ── STATS ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: var(--border);
+      background: white;
+    }
+    .stat {
+      padding: 36px 40px;
+      border-right: var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 6px;
+      background: var(--ig-short);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-num span { background: none; -webkit-text-fill-color: inherit; }
+    .stat-label { font-size: 14px; color: #8e8e8e; }
+
+    /* ── DOLOR ── */
+    .pain-section {
+      background: linear-gradient(135deg, #1a0533 0%, #2d0845 50%, #0d1f4e 100%);
+      color: white;
+      border-bottom: var(--border);
+      padding: 80px 40px;
+    }
+    .pain-intro {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 50px;
+    }
+    .pain-list {
+      list-style: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .pain-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 24px;
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-size: clamp(20px, 3vw, 34px);
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      line-height: 1.2;
+    }
+    .pain-list li .pain-x {
+      font-family: 'Space Mono', monospace;
+      color: rgba(255,255,255,0.2);
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .pain-list li em {
+      font-style: normal;
+      background: var(--ig-short);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .pain-footer {
+      margin-top: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .pain-footer p {
+      font-size: 18px;
+      color: rgba(255,255,255,0.6);
+      max-width: 480px;
+      line-height: 1.6;
+    }
+    .pain-footer strong { color: white; }
+
+    /* ── PLATAFORMAS ── */
+    .platforms-strip {
+      border-bottom: var(--border);
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      background: white;
+    }
+    .platforms-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #8e8e8e;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .platforms-icons {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .plat-icon {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--black);
+    }
+    .plat-icon i { font-size: 26px; }
+    .plat-icon.ig i { color: #c13584; }
+    .plat-icon.wa i { color: #25d366; }
+    .plat-icon.fb i { color: #1877f2; }
+    .plat-icon.ml {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+      background: #ffe600;
+      padding: 4px 10px;
+      color: #333;
+      gap: 6px;
+    }
+    .plat-icon.ml span.ml-dot { color: #3483fa; font-size: 18px; }
+
+    /* ── GALERIA / CAROUSEL ── */
+    .gallery-section {
+      padding: 80px 0 0;
+      border-bottom: var(--border);
+    }
+    .gallery-header {
+      padding: 0 40px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .section-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      background: var(--ig-short);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+    h2 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      color: var(--black);
+    }
+
+    .carousel-wrap {
+      position: relative;
+      border-top: var(--border);
+      overflow: hidden;
+    }
+    .carousel-track {
+      display: flex;
+      transition: transform 0.45s cubic-bezier(.77,0,.175,1);
+    }
+    .carousel-slide {
+      min-width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-bottom: none;
+    }
+    .carousel-img {
+      border-right: var(--border);
+      overflow: hidden;
+      position: relative;
+    }
+    .carousel-img:last-child { border-right: none; }
+    .carousel-img img {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s;
+    }
+    .carousel-img:hover img { transform: scale(1.03); }
+    .carousel-img .slide-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 12px 16px;
+      background: var(--black);
+      color: var(--white);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 500;
+      border-top: var(--border);
+    }
+    .slide-cat {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      background: var(--ig-short);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .carousel-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 40px;
+      border-top: var(--border);
+      background: white;
+    }
+    .carousel-dots { display: flex; gap: 8px; }
+    .carousel-dot {
+      width: 9px; height: 9px;
+      border: 1px solid #dbdbdb;
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .carousel-dot.active { background: var(--accent); border-color: var(--accent); }
+    .carousel-arrows { display: flex; gap: 8px; }
+    .carousel-btn {
+      width: 44px; height: 44px;
+      border: var(--border);
+      background: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.15s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+    }
+    .carousel-btn:hover { background: var(--ig); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(225,48,108,0.3); }
+
+    /* ── COMO FUNCIONA ── */
+    .how-section {
+      border-bottom: var(--border);
+      background: white;
+    }
+    .how-header {
+      padding: 60px 40px 40px;
+      border-bottom: var(--border);
+    }
+    .how-header h2 { margin-top: 8px; }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .step {
+      display: flex;
+      gap: 20px;
+      padding: 40px;
+      border-right: var(--border);
+    }
+    .step:last-child { border-right: none; }
+    .step-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      background: var(--ig-short);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      flex-shrink: 0;
+      width: 48px;
+    }
+    .step-body h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+    .step-body p { font-size: 14px; color: #8e8e8e; line-height: 1.6; }
+
+    /* ── PHONE MOCKUP ── */
+    .how-right {
+      background: linear-gradient(135deg, #f5f0ff 0%, #fff0f5 50%, #fff8f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+    }
+    .phone {
+      width: 290px;
+      border: 2px solid rgba(0,0,0,0.12);
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(131,58,180,0.2), 0 8px 20px rgba(0,0,0,0.08);
+      background: #ece5dd;
+      display: flex;
+      flex-direction: column;
+    }
+    .phone-notch-bar {
+      background: #111;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .phone-notch {
+      width: 70px; height: 10px;
+      background: #222;
+      border-radius: 10px;
+    }
+    .wa-header {
+      background: #075e54;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+    }
+    .wa-back { font-size: 18px; opacity: 0.8; cursor: default; }
+    .wa-avatar {
+      width: 34px; height: 34px;
+      background: var(--orange);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: white; flex-shrink: 0;
+    }
+    .wa-info { flex: 1; }
+    .wa-info strong { display: block; font-size: 13px; font-weight: 700; }
+    .wa-info span { font-size: 11px; opacity: 0.75; }
+    .wa-chat {
+      flex: 1;
+      overflow: hidden;
+      padding: 10px 10px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-height: 380px;
+      max-height: 380px;
+    }
+    .wa-msg {
+      max-width: 82%;
+      padding: 7px 10px 4px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-line;
+      word-break: break-word;
+      animation: waMsgIn 0.25s ease both;
+    }
+    .wa-msg.bot {
+      background: white;
+      align-self: flex-start;
+      border-top-left-radius: 2px;
+    }
+    .wa-msg.user {
+      background: #dcf8c6;
+      align-self: flex-end;
+      border-top-right-radius: 2px;
+    }
+    .wa-msg .wa-time {
+      font-size: 10px;
+      color: #aaa;
+      text-align: right;
+      margin-top: 3px;
+    }
+    .wa-msg.user .wa-time { color: #7eb87e; }
+    .wa-msg img {
+      width: 100%;
+      border-radius: 6px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .wa-typing {
+      background: white;
+      border-radius: 8px;
+      border-top-left-radius: 2px;
+      padding: 10px 14px;
+      align-self: flex-start;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      animation: waMsgIn 0.2s ease both;
+    }
+    .wa-typing span {
+      width: 7px; height: 7px;
+      background: #bbb;
+      border-radius: 50%;
+      animation: typingBounce 1.1s infinite;
+    }
+    .wa-typing span:nth-child(2) { animation-delay: 0.18s; }
+    .wa-typing span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+    @keyframes waMsgIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .wa-input-bar {
+      background: #f0f0f0;
+      border-top: 1px solid #d0cac3;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .wa-input-text {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 7px 12px;
+      font-size: 12px;
+      color: #aaa;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .wa-send-btn {
+      width: 34px; height: 34px;
+      background: #25d366;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 13px; flex-shrink: 0;
+    }
+
+    /* ── PRICING ── */
+    .pricing-section {
+      padding: 80px 40px;
+      border-bottom: var(--border);
+      background: var(--white);
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 50px;
+    }
+    .plan {
+      padding: 36px 30px;
+      border: var(--border);
+      border-radius: var(--radius);
+      position: relative;
+      background: white;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .plan:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .plan.featured {
+      background: linear-gradient(135deg, #1a0533 0%, #2d0845 50%, #1a1a3e 100%);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 8px 40px rgba(131,58,180,0.35);
+    }
+    .plan-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      background: var(--ig-short);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+    .plan-name { font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .plan-price {
+      font-family: 'Space Mono', monospace;
+      font-size: 52px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -2px;
+      margin-bottom: 4px;
+    }
+    .plan-price sub { font-size: 16px; letter-spacing: 0; }
+    .plan-period { font-size: 13px; color: #8e8e8e; margin-bottom: 28px; }
+    .plan.featured .plan-period { color: rgba(255,255,255,0.5); }
+    .plan-features {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+    .plan-features li {
+      font-size: 14px;
+      padding: 9px 0;
+      border-bottom: var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #555;
+    }
+    .plan.featured .plan-features li { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+    .plan-features li::before {
+      content: "✓";
+      font-weight: 700;
+      font-size: 12px;
+      background: var(--ig-short);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .plan-btn {
+      display: block;
+      text-align: center;
+      padding: 13px;
+      border: var(--border);
+      border-radius: 28px;
+      font-weight: 700;
+      font-size: 14px;
+      background: transparent;
+      color: var(--black);
+      transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    .plan-btn:hover { background: #f0f0f0; transform: translateY(-1px); }
+    .plan.featured .plan-btn {
+      background: var(--ig);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 16px rgba(225,48,108,0.4);
+    }
+    .plan.featured .plan-btn:hover { box-shadow: 0 6px 22px rgba(225,48,108,0.55); transform: translateY(-2px); }
+
+    /* ── FAQ ── */
+    .faq-section {
+      padding: 80px 40px;
+      border-bottom: var(--border);
+      background: var(--white);
+    }
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 50px;
+    }
+    .faq-item {
+      padding: 24px 28px;
+      border: var(--border);
+      border-radius: var(--radius-sm);
+      background: white;
+      box-shadow: var(--shadow);
+    }
+    .faq-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+    .faq-item p { font-size: 14px; color: #8e8e8e; line-height: 1.7; }
+
+    /* ── CTA FINAL ── */
+    .cta-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: var(--border);
+    }
+    .cta-left {
+      padding: 80px 50px;
+      border-right: var(--border);
+      background: white;
+    }
+    .cta-left h2 { margin-bottom: 16px; }
+    .cta-left p { color: #8e8e8e; font-size: 16px; line-height: 1.6; margin-bottom: 36px; }
+    .cta-right {
+      background: var(--ig);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      padding: 60px 40px;
+      text-align: center;
+    }
+    .cta-right p {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .btn-white {
+      background: white;
+      color: var(--black);
+      padding: 15px 36px;
+      border: none;
+      border-radius: 28px;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
+
+    /* ── FOOTER ── */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      font-size: 13px;
+      color: #8e8e8e;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: white;
+      border-top: var(--border);
+    }
+    footer .logo { font-size: 17px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-right { padding: 40px 24px; min-height: auto; }
+      .hero-left { padding: 40px 24px; }
+      .how-header { padding: 40px 20px 30px; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .step { border-right: none; border-bottom: var(--border); }
+      .step:last-child { border-bottom: none; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .faq-grid { grid-template-columns: 1fr; }
+      .cta-section { grid-template-columns: 1fr; }
+      .cta-left { border-right: none; padding: 50px 24px; }
+      .gallery-section, .pricing-section, .faq-section { padding: 50px 20px; }
+      .stats-bar { grid-template-columns: 1fr; }
+      .stat { border-right: none; border-bottom: var(--border); }
+      .stat:last-child { border-bottom: none; }
+      .pain-section { padding: 50px 24px; }
+      .pain-footer { flex-direction: column; }
+      .carousel-slide { grid-template-columns: 1fr; }
+      .carousel-img { border-right: none; border-bottom: var(--border); }
+      .carousel-img img { height: 260px; }
+      .carousel-img:last-child { border-bottom: none; }
+      .gallery-header { padding: 0 20px 30px; }
+      .carousel-controls { padding: 14px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Post<span>IA</span></div>
+  <div class="nav-links">
+    <a href="#galeria">Ejemplos</a>
+    <a href="#como">Como funciona</a>
+    <a href="#planes">Planes</a>
+  </div>
+  <a href="https://wa.me/5491100000000?text=Hola!%20quiero%20probar%20PostIA" class="nav-cta">Empezar gratis</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">⚡ Sin apps. Solo WhatsApp.</div>
+    <h1>Tus fotos te<br>estan costando<br><span class="line-orange">ventas.</span></h1>
+    <p class="hero-sub">
+      Manda una foto desde tu celular y recibis imagen mejorada con IA y descripcion lista para publicar. En 30 segundos.
+    </p>
+    <div class="hero-btns">
+      <a href="https://wa.me/5491100000000?text=Hola!%20quiero%20probar%20PostIA" class="btn-primary">Probar gratis →</a>
+      <a href="#galeria" class="btn-ghost">Ver ejemplos</a>
+    </div>
+    <div class="hero-platforms">
+      <i class="fa-brands fa-instagram" title="Instagram"></i>
+      <i class="fa-brands fa-whatsapp" title="WhatsApp"></i>
+      <i class="fa-brands fa-facebook" title="Facebook"></i>
+      <span class="hero-ml-badge">ML</span>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="phone">
+      <div class="phone-notch-bar"><div class="phone-notch"></div></div>
+      <div class="wa-header">
+        <div class="wa-back">‹</div>
+        <div class="wa-avatar">P</div>
+        <div class="wa-info">
+          <strong>PostIA</strong>
+          <span>en linea</span>
+        </div>
+      </div>
+      <div class="wa-chat" id="waChat"></div>
+      <div class="wa-input-bar">
+        <div class="wa-input-text">Escribe un mensaje</div>
+        <div class="wa-send-btn">&#9658;</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <span class="ticker-inner">
+    TUS FOTOS ESTAN COSTANDO VENTAS &nbsp;·&nbsp; LA IA MEJORA TU IMAGEN EN 30 SEG &nbsp;·&nbsp; INSTAGRAM &nbsp;·&nbsp; MERCADO LIBRE &nbsp;·&nbsp; FACEBOOK &nbsp;·&nbsp; WHATSAPP &nbsp;·&nbsp; SIN APPS, SOLO WHATSAPP &nbsp;·&nbsp; 5 PUBLICACIONES GRATIS &nbsp;·&nbsp;
+    TUS FOTOS ESTAN COSTANDO VENTAS &nbsp;·&nbsp; LA IA MEJORA TU IMAGEN EN 30 SEG &nbsp;·&nbsp; INSTAGRAM &nbsp;·&nbsp; MERCADO LIBRE &nbsp;·&nbsp; FACEBOOK &nbsp;·&nbsp; WHATSAPP &nbsp;·&nbsp; SIN APPS, SOLO WHATSAPP &nbsp;·&nbsp; 5 PUBLICACIONES GRATIS &nbsp;·&nbsp;
+  </span>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-num">+<span>3x</span></div>
+    <div class="stat-label">mas interacciones con imagenes profesionales</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num"><span>30</span>seg</div>
+    <div class="stat-label">de foto casera a imagen lista para publicar</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">4<span>+</span></div>
+    <div class="stat-label">plataformas optimizadas desde un solo mensaje</div>
+  </div>
+</div>
+
+<!-- PLATAFORMAS -->
+<div class="platforms-strip">
+  <span class="platforms-label">Publica directo en</span>
+  <div class="platforms-icons">
+    <div class="plat-icon ig">
+      <i class="fa-brands fa-instagram"></i>
+      Instagram
+    </div>
+    <div class="plat-icon wa">
+      <i class="fa-brands fa-whatsapp"></i>
+      WhatsApp
+    </div>
+    <div class="plat-icon fb">
+      <i class="fa-brands fa-facebook"></i>
+      Facebook
+    </div>
+    <div class="plat-icon ml">
+      <span class="ml-dot">●</span> Mercado Libre
+    </div>
+  </div>
+</div>
+
+<!-- DOLOR -->
+<section class="pain-section">
+  <div class="pain-intro">El problema</div>
+  <ul class="pain-list">
+    <li>
+      <span class="pain-x">×</span>
+      <span>Tus fotos no hacen <em>justicia</em> a lo que vendés</span>
+    </li>
+    <li>
+      <span class="pain-x">×</span>
+      <span>Te falta <em>calidad visual</em> para competir online</span>
+    </li>
+    <li>
+      <span class="pain-x">×</span>
+      <span>No tenés tiempo ni plata para un <em>fotógrafo</em></span>
+    </li>
+    <li>
+      <span class="pain-x">×</span>
+      <span>Escribir descripciones para cada red <em>te mata</em></span>
+    </li>
+  </ul>
+  <div class="pain-footer">
+    <p>
+      <strong>PostIA resuelve todo eso desde WhatsApp.</strong><br>
+      Sin apps, sin diseñadores, sin perderte horas frente a la pantalla.
+    </p>
+    <a href="https://wa.me/5491100000000?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-primary">Probar gratis ahora →</a>
+  </div>
+</section>
+
+<!-- GALERIA -->
+<section class="gallery-section" id="galeria">
+  <div class="gallery-header">
+    <div>
+      <div class="section-num">01 — RESULTADOS</div>
+      <h2>Antes y despues.<br>Fotos reales.</h2>
+    </div>
+  </div>
+
+  <div class="carousel-wrap">
+    <div class="carousel-track" id="carouselTrack">
+
+      <!-- Slide 1: Comida -->
+      <div class="carousel-slide">
+        <div class="carousel-img">
+          <img src="img5.jpg" alt="Carne antes/despues">
+          <div class="slide-label">
+            <span>Carne · Estilo elegante</span>
+            <span class="slide-cat">Comida</span>
+          </div>
+        </div>
+        <div class="carousel-img">
+          <img src="img6.jpg" alt="Pasta antes/despues">
+          <div class="slide-label">
+            <span>Pasta · Estilo llamativo</span>
+            <span class="slide-cat">Comida</span>
+          </div>
+        </div>
+        <div class="carousel-img">
+          <img src="img1.jpg" alt="Ropa antes/despues">
+          <div class="slide-label">
+            <span>Campera · Estilo elegante</span>
+            <span class="slide-cat">Ropa</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Ropa + Electronica -->
+      <div class="carousel-slide">
+        <div class="carousel-img">
+          <img src="img2.jpg" alt="Ropa antes/despues">
+          <div class="slide-label">
+            <span>Campera · Estilo realista</span>
+            <span class="slide-cat">Ropa</span>
+          </div>
+        </div>
+        <div class="carousel-img">
+          <img src="img3.jpg" alt="Auriculares antes/despues">
+          <div class="slide-label">
+            <span>Auriculares · Estilo elegante</span>
+            <span class="slide-cat">Electronica</span>
+          </div>
+        </div>
+        <div class="carousel-img">
+          <img src="img4.jpg" alt="Auriculares antes/despues">
+          <div class="slide-label">
+            <span>Auriculares · Estilo realista</span>
+            <span class="slide-cat">Electronica</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="carousel-controls">
+    <div class="carousel-dots" id="carouselDots">
+      <div class="carousel-dot active" onclick="goToSlide(0)"></div>
+      <div class="carousel-dot" onclick="goToSlide(1)"></div>
+    </div>
+    <div class="carousel-arrows">
+      <button class="carousel-btn" onclick="prevSlide()">←</button>
+      <button class="carousel-btn" onclick="nextSlide()">→</button>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="how-section" id="como">
+  <div class="how-header">
+    <div class="section-num">02 — COMO FUNCIONA</div>
+    <h2>Tres pasos. Sin complicaciones.</h2>
+  </div>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h3>Manda la foto</h3>
+        <p>Desde WhatsApp, manda una foto de tu producto con el nombre. Sin descargas ni registro.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h3>Elegi categoria y estilo</h3>
+        <p>El bot te pregunta el tipo de producto y el estilo: realista, llamativo o elegante.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h3>Recibis todo listo</h3>
+        <p>En 30 segundos llega la imagen mejorada y la descripcion lista para copiar y pegar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANES -->
+<section class="pricing-section" id="planes">
+  <div class="section-num">03 — PLANES</div>
+  <h2>Simple y sin sorpresas.</h2>
+  <div class="pricing-grid">
+    <div class="plan">
+      <div class="plan-tag">Starter</div>
+      <div class="plan-name">Para empezar</div>
+      <div class="plan-price"><sub>$</sub>8</div>
+      <div class="plan-period">USD por mes</div>
+      <ul class="plan-features">
+        <li>1 plataforma</li>
+        <li>20 imagenes por mes</li>
+        <li>Los 3 estilos</li>
+        <li>Soporte por WhatsApp</li>
+      </ul>
+      <a href="https://wa.me/5491100000000?text=Quiero%20el%20plan%20Starter" class="plan-btn">Empezar →</a>
+    </div>
+    <div class="plan featured">
+      <div class="plan-tag">★ Mas popular</div>
+      <div class="plan-name">Para crecer</div>
+      <div class="plan-price"><sub>$</sub>18</div>
+      <div class="plan-period">USD por mes</div>
+      <ul class="plan-features">
+        <li>2 plataformas</li>
+        <li>50 imagenes por mes</li>
+        <li>Los 3 estilos</li>
+        <li>Soporte prioritario</li>
+      </ul>
+      <a href="https://wa.me/5491100000000?text=Quiero%20el%20plan%20Standard" class="plan-btn">Empezar →</a>
+    </div>
+    <div class="plan">
+      <div class="plan-tag">Pro</div>
+      <div class="plan-name">Para negocios</div>
+      <div class="plan-price"><sub>$</sub>35</div>
+      <div class="plan-period">USD por mes</div>
+      <ul class="plan-features">
+        <li>Todas las plataformas</li>
+        <li>Imagenes ilimitadas</li>
+        <li>Los 3 estilos</li>
+        <li>Soporte prioritario</li>
+      </ul>
+      <a href="https://wa.me/5491100000000?text=Quiero%20el%20plan%20Pro" class="plan-btn">Empezar →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="section-num">04 — FAQ</div>
+  <h2>Preguntas frecuentes.</h2>
+  <div class="faq-grid">
+    <div class="faq-item">
+      <h4>Necesito instalar alguna app?</h4>
+      <p>No. Todo funciona desde WhatsApp, que ya tenes en tu celular. Sin descargas ni registros.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Cuanto tarda en generar?</h4>
+      <p>Entre 20 y 40 segundos. Te manda un mensaje de confirmacion y cuando esta listo te llega todo.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Sirve para cualquier producto?</h4>
+      <p>Si. Comida, ropa, electronica, hogar, belleza y mas. El bot te guia para elegir la mejor configuracion.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Como pago?</h4>
+      <p>A traves de MercadoPago. Tarjeta de credito, debito, transferencia o efectivo.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Puedo cancelar cuando quiera?</h4>
+      <p>Si, sin permanencia ni penalidad. Cancelas cuando quieras directamente desde WhatsApp.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Que pasa si no me gusta el resultado?</h4>
+      <p>Podes pedirlo de nuevo con otro estilo. Las 5 publicaciones de prueba son gratis, sin tarjeta.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <div class="cta-left">
+    <div class="section-num">05 — EMPEZA HOY</div>
+    <h2>5 publicaciones gratis.<br>Sin tarjeta.</h2>
+    <p>Tus primeras 5 publicaciones son gratis, sin tarjeta. Despues elegi el plan que mejor se adapta a tu negocio.</p>
+    <a href="https://wa.me/5491100000000?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-primary" style="display:inline-block">Probar gratis por WhatsApp →</a>
+  </div>
+  <div class="cta-right">
+    <p>5 PUBLICACIONES GRATIS · SIN TARJETA</p>
+    <a href="https://wa.me/5491100000000?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-white">Abrir WhatsApp →</a>
+    <p>Sin instalaciones · Sin registro</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">Post<span style="color:var(--orange)">IA</span></div>
+  <span>postia.com.ar · Hecho en Argentina</span>
+  <span>© 2025 PostIA</span>
+</footer>
+
+<script>
+  // ── WhatsApp Chat Animation ──
+  const chat = document.getElementById('waChat');
+  const now = () => {
+    const d = new Date();
+    return d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+  };
+
+  const MESSAGES = [
+    { side: 'user', img: 'img5.jpg', text: 'bife de chorizo con chimichurri' },
+    { side: 'bot',  text: 'Perfecto! Recibi tu foto de *bife de chorizo*.\n\nQue tipo de producto es?\n1 - Comida / Restaurante\n2 - Ropa\n3 - Electronica\n4 - Hogar / Deco\n5 - Belleza\n6 - Otro' },
+    { side: 'user', text: '1' },
+    { side: 'bot',  text: 'Que estilo queres?\n1 - Realista y profesional\n2 - Llamativo y exagerado\n3 - Elegante y premium' },
+    { side: 'user', text: '2' },
+    { side: 'bot',  text: 'Donde vas a publicar?\n1 - Instagram\n2 - Mercado Libre\n3 - Facebook\n4 - WhatsApp\n5 - Todos' },
+    { side: 'user', text: '1' },
+    { side: 'bot',  text: 'Generando tu contenido... en unos segundos te llega la imagen lista.' },
+    { side: 'bot',  img: 'img5.jpg', text: '*Instagram*\n\nBife de chorizo jugoso, chimichurri casero. La noche perfecta empieza aca. 🔥\n\n#bife #carneargentina #parrilla #bbq #foodie' },
+  ];
+
+  // Delays in ms between each step
+  const DELAYS = [300, 1200, 2600, 3400, 4800, 5600, 7000, 7800, 10000];
+
+  function addTyping() {
+    const el = document.createElement('div');
+    el.className = 'wa-typing';
+    el.innerHTML = '<span></span><span></span><span></span>';
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+    return el;
+  }
+
+  function addMsg(msg) {
+    const el = document.createElement('div');
+    el.className = `wa-msg ${msg.side}`;
+    let inner = '';
+    if (msg.img) inner += `<img src="${msg.img}" alt="">`;
+    inner += `<div>${msg.text.replace(/\*(.*?)\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>`;
+    inner += `<div class="wa-time">${now()} ${msg.side === 'user' ? '✓✓' : ''}</div>`;
+    el.innerHTML = inner;
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  let waTimers = [];
+
+  function runChat() {
+    chat.innerHTML = '';
+    waTimers.forEach(clearTimeout);
+    waTimers = [];
+
+    MESSAGES.forEach((msg, i) => {
+      // Show typing indicator before bot messages (except restart)
+      if (msg.side === 'bot') {
+        const t1 = setTimeout(() => {
+          const typing = addTyping();
+          const t2 = setTimeout(() => {
+            typing.remove();
+            addMsg(msg);
+          }, 900);
+          waTimers.push(t2);
+        }, DELAYS[i]);
+        waTimers.push(t1);
+      } else {
+        const t = setTimeout(() => addMsg(msg), DELAYS[i]);
+        waTimers.push(t);
+      }
+    });
+
+    // Restart after full sequence
+    const restart = setTimeout(runChat, 16000);
+    waTimers.push(restart);
+  }
+
+  runChat();
+
+  // ── Gallery carousel ──
+  let current = 0;
+  const total = 2;
+  const track = document.getElementById('carouselTrack');
+  const dots = document.querySelectorAll('.carousel-dot');
+  let autoTimer = setInterval(nextSlide, 4500);
+
+  function goToSlide(n) {
+    current = (n + total) % total;
+    track.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    clearInterval(autoTimer);
+    autoTimer = setInterval(nextSlide, 4500);
+  }
+  function nextSlide() { goToSlide(current + 1); }
+  function prevSlide() { goToSlide(current - 1); }
+
+  let touchStartX = 0;
+  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  track.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? nextSlide() : prevSlide();
+  });
+</script>
+</body>
+</html>
