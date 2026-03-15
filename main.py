@@ -228,7 +228,57 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
     return f"{BASE_URL}/static/{filename}"
 
 
+def investigar_producto_ml(descripcion: str) -> str:
+    """Usa GPT para buscar especificaciones tecnicas reales del producto."""
+    prompt = (
+        f"Sos un experto en e-commerce de Mercado Libre Argentina. "
+        f"Te describen un producto: '{descripcion}'.\n\n"
+        f"Tu tarea: investigar y listar las especificaciones tecnicas mas relevantes de este producto "
+        f"para una publicacion en Mercado Libre. Incluí:\n"
+        f"- Marca y modelo exacto (si se puede inferir o es conocido)\n"
+        f"- Especificaciones tecnicas clave (materiales, medidas, capacidad, potencia, etc.)\n"
+        f"- Caracteristicas diferenciales que busca un comprador en ML\n"
+        f"- Palabras clave SEO que usa la gente para buscar este producto\n\n"
+        f"Si el vendedor no dio modelo exacto, aclaralo y sugerí que conviene especificarlo.\n"
+        f"Formato: bullet points cortos, sin introduccion. Maximo 120 palabras."
+    )
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=250,
+    )
+    return response.choices[0].message.content.strip()
+
+
 def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
+    # Para Mercado Libre: primero investigamos el producto, luego generamos el copy
+    if plataforma == "Mercado Libre":
+        specs = investigar_producto_ml(descripcion)
+        prompt = (
+            f"Sos un vendedor experto en Mercado Libre Argentina. "
+            f"Producto: '{descripcion}'.\n\n"
+            f"Especificaciones investigadas:\n{specs}\n\n"
+            f"Crea una publicacion profesional de ML con estilo '{estilo}':\n"
+            f"1. TITULO: maximo 60 caracteres, con las palabras clave mas buscadas, "
+            f"incluí marca y modelo si estan disponibles\n"
+            f"2. Cuatro bullet points que destaquen especificaciones tecnicas reales y beneficios concretos\n"
+            f"3. NOTA_MODELO: una linea corta que le avise al vendedor si conviene aclarar "
+            f"el modelo exacto o no (por ejemplo: 'Aclarar el modelo exacto mejora el SEO y genera mas confianza')\n\n"
+            f"Formato exacto:\n"
+            f"TITULO: ...\n"
+            f"- punto 1\n"
+            f"- punto 2\n"
+            f"- punto 3\n"
+            f"- punto 4\n"
+            f"NOTA_MODELO: ..."
+        )
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=400,
+        )
+        return response.choices[0].message.content.strip()
+
     key = (plataforma, estilo)
     prompt_template = PROMPTS_TEXTO.get(key, PROMPTS_TEXTO[("Instagram", "realista")])
     prompt = prompt_template.format(desc=descripcion)
@@ -293,7 +343,14 @@ async def webhook(
             plataformas,
             session.get("foto_url"),
         )
-        return twiml("Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.")
+        msg = "Generando tu contenido... En unos segundos te llega la imagen y descripcion lista."
+        if "Mercado Libre" in plataformas:
+            msg += (
+                "\n\n_Tip ML: si tu producto tiene marca y modelo especifico "
+                "(ej: 'Auriculares Sony WH-1000XM5') aclararlo en la descripcion "
+                "mejora mucho el SEO y la confianza del comprador._"
+            )
+        return twiml(msg)
 
     # Paso 2: eligio estilo
     if state == "waiting_estilo" and body in ESTILOS:
