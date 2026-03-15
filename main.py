@@ -24,7 +24,8 @@ openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 twilio = TwilioClient(os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN"))
 os.environ["FAL_KEY"] = os.getenv("FAL_KEY", "")
 TWILIO_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
-BASE_URL = os.getenv("BASE_URL", "http://localhost:8001")
+_railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+BASE_URL = os.getenv("BASE_URL") or (f"https://{_railway_domain}" if _railway_domain else "http://localhost:8001")
 
 sessions = {}
 
