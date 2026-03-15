@@ -125,12 +125,12 @@ Bot se reactiva automáticamente
 
 ## Planes y Precios
 
-| Plan      | Fotos/mes  | Fondo               | Precio (ARS)   |
-|-----------|------------|---------------------|----------------|
-| Trial     | 3 gratis   | Blanco o negro      | Gratis         |
-| Básico    | 30         | Blanco o negro      | $15.000/mes    |
-| Pro       | 100        | Libre (descripción) | $30.000/mes    |
-| Ilimitado | Sin límite | Libre (descripción) | $50.000/mes    |
+| Plan      | Publicaciones/mes | Fondo               | Precio (ARS)   |
+|-----------|-------------------|---------------------|----------------|
+| Trial     | 3 gratis          | Blanco o negro      | Gratis         |
+| Básico    | 30                | Blanco o negro      | $15.000/mes    |
+| Pro       | 100               | Libre (descripción) | $30.000/mes    |
+| Ilimitado | Sin límite        | Libre (descripción) | $50.000/mes    |
 
 ---
 
