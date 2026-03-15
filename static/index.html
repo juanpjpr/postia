@@ -879,6 +879,95 @@
     }
     .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
 
+    /* ── HERO SIMPLE ── */
+    .hero-simple { grid-template-columns: 1fr; min-height: auto; padding: 80px 40px 60px; }
+    .hero-full { max-width: 700px; }
+    .hero-full h1 { font-size: clamp(2.8rem, 6vw, 5rem); }
+
+    /* ── GALLERY ANTES/DESPUES ── */
+    .gallery-sub { color: #8e8e8e; font-size: 1rem; margin-top: 8px; }
+    .ba-carousel-wrap { overflow: hidden; }
+    .ba-track { display: flex; transition: transform 0.4s ease; }
+    .ba-slide {
+      min-width: 100%;
+      padding: 0 40px 40px;
+      box-sizing: border-box;
+    }
+    .ba-pair {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .ba-img-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: var(--border);
+    }
+    .ba-img-wrap img {
+      width: 100%;
+      height: 420px;
+      object-fit: cover;
+      display: block;
+    }
+    .ba-label {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .ba-label.before { background: rgba(0,0,0,0.55); color: #ccc; }
+    .ba-label.after { background: var(--ig-short); color: white; }
+    .ba-arrow-mid { font-size: 2rem; color: #ccc; text-align: center; }
+    .ba-caption {
+      text-align: center;
+      font-size: 13px;
+      font-family: 'Space Mono', monospace;
+      color: #8e8e8e;
+    }
+    .ba-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px 40px;
+      border-top: var(--border);
+    }
+    .ba-dots { display: flex; gap: 8px; }
+    .ba-dot { width: 8px; height: 8px; border-radius: 50%; background: #dbdbdb; cursor: pointer; transition: background 0.2s; }
+    .ba-dot.active { background: var(--black); }
+    .ba-btn { background: none; border: var(--border); border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 16px; }
+    .ba-btn:hover { background: #f5f5f5; }
+
+    /* ── PHONE DEMO SECTION ── */
+    .phone-demo-section {
+      border-bottom: var(--border);
+      background: #fafafa;
+    }
+    .phone-demo-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 1200px;
+      margin: 0 auto;
+      align-items: center;
+      gap: 60px;
+      padding: 80px 40px;
+    }
+    .phone-demo-text .section-num { color: #8e8e8e; margin-bottom: 16px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1px; }
+    .phone-demo-text h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 700; line-height: 1.2; margin-bottom: 28px; }
+    .phone-demo-steps { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; }
+    .phone-demo-steps li { display: flex; align-items: flex-start; gap: 14px; font-size: 0.95rem; color: #555; line-height: 1.5; }
+    .phone-demo-steps li span { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: white; background: var(--black); border-radius: 6px; padding: 3px 8px; flex-shrink: 0; margin-top: 2px; }
+    .phone-demo-device { display: flex; justify-content: center; }
+
     /* ── FONDO SECTION ── */
     .fondo-section {
       border-bottom: var(--border);
@@ -989,6 +1078,12 @@
       nav { padding: 14px 20px; }
       .nav-links { display: none; }
       .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-simple { padding: 50px 24px 40px; }
+      .ba-slide { padding: 0 16px 24px; }
+      .ba-img-wrap img { height: 240px; }
+      .ba-arrow-mid { font-size: 1.2rem; }
+      .ba-controls { padding: 16px; }
+      .phone-demo-inner { grid-template-columns: 1fr; padding: 50px 24px; gap: 40px; }
       .hero-right { padding: 40px 24px; min-height: auto; }
       .hero-left { padding: 40px 24px; }
       .how-header { padding: 40px 20px 30px; }
@@ -1028,40 +1123,22 @@
 </nav>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-left">
+<section class="hero hero-simple">
+  <div class="hero-left hero-full">
     <div class="hero-tag">⚡ Sin apps. Solo WhatsApp.</div>
-    <h1>Tus fotos te<br>estan costando<br><span class="line-orange">ventas.</span></h1>
+    <h1>Deja tus fotos<br>mas profesionales.<br><span class="line-orange">Sin vuelta.</span></h1>
     <p class="hero-sub">
-      Manda una foto desde tu celular y recibis imagen mejorada con IA y descripcion lista para publicar. En 30 segundos.
+      Manda una foto por WhatsApp y en 30 segundos tenes imagen mejorada con IA y descripcion lista para publicar. Rapido, simple, sin complicaciones.
     </p>
     <div class="hero-btns">
       <a href="https://wa.me/14155238886?text=Hola!%20quiero%20probar%20PostIA" class="btn-primary">Probar gratis →</a>
-      <a href="#galeria" class="btn-ghost">Ver ejemplos</a>
+      <a href="#galeria" class="btn-ghost">Ver ejemplos reales</a>
     </div>
     <div class="hero-platforms">
       <i class="fa-brands fa-instagram" title="Instagram"></i>
       <i class="fa-brands fa-whatsapp" title="WhatsApp"></i>
       <i class="fa-brands fa-facebook" title="Facebook"></i>
       <span class="hero-ml-badge">ML</span>
-    </div>
-  </div>
-  <div class="hero-right">
-    <div class="phone">
-      <div class="phone-notch-bar"><div class="phone-notch"></div></div>
-      <div class="wa-header">
-        <div class="wa-back">‹</div>
-        <div class="wa-avatar">P</div>
-        <div class="wa-info">
-          <strong>PostIA</strong>
-          <span>en linea</span>
-        </div>
-      </div>
-      <div class="wa-chat" id="waChat"></div>
-      <div class="wa-input-bar">
-        <div class="wa-input-text">Escribe un mensaje</div>
-        <div class="wa-send-btn">&#9658;</div>
-      </div>
     </div>
   </div>
 </section>
@@ -1142,79 +1219,108 @@
   </div>
 </section>
 
-<!-- GALERIA -->
+<!-- GALERIA ANTES/DESPUES -->
 <section class="gallery-section" id="galeria">
   <div class="gallery-header">
     <div>
       <div class="section-num">01 — RESULTADOS</div>
-      <h2>Antes y despues.<br>Fotos reales.</h2>
+      <h2>Fotos reales.<br>Tuyas, mejoradas.</h2>
+      <p class="gallery-sub">Esto es lo que PostIA hace con una foto comun del celu.</p>
     </div>
   </div>
 
-  <div class="carousel-wrap">
-    <div class="carousel-track" id="carouselTrack">
+  <div class="ba-carousel-wrap">
+    <div class="ba-track" id="baTrack">
 
-      <!-- Slide 1: Comida -->
-      <div class="carousel-slide">
-        <div class="carousel-img">
-          <img src="/static/img5.jpg" alt="Carne antes/despues">
-          <div class="slide-label">
-            <span>Carne · Estilo elegante</span>
-            <span class="slide-cat">Comida</span>
+      <div class="ba-slide">
+        <div class="ba-pair">
+          <div class="ba-img-wrap">
+            <img src="/static/guitarra_antes.jpg" alt="Guitarra antes">
+            <span class="ba-label before">Antes</span>
+          </div>
+          <div class="ba-arrow-mid">→</div>
+          <div class="ba-img-wrap">
+            <img src="/static/guitarra_despues.jpg" alt="Guitarra despues">
+            <span class="ba-label after">Despues</span>
           </div>
         </div>
-        <div class="carousel-img">
-          <img src="/static/img6.jpg" alt="Pasta antes/despues">
-          <div class="slide-label">
-            <span>Pasta · Estilo llamativo</span>
-            <span class="slide-cat">Comida</span>
-          </div>
-        </div>
-        <div class="carousel-img">
-          <img src="/static/img1.jpg" alt="Ropa antes/despues">
-          <div class="slide-label">
-            <span>Campera · Estilo elegante</span>
-            <span class="slide-cat">Ropa</span>
-          </div>
-        </div>
+        <div class="ba-caption">Guitarra · Fondo blanco profesional</div>
       </div>
 
-      <!-- Slide 2: Ropa + Electronica -->
-      <div class="carousel-slide">
-        <div class="carousel-img">
-          <img src="/static/img2.jpg" alt="Ropa antes/despues">
-          <div class="slide-label">
-            <span>Campera · Estilo realista</span>
-            <span class="slide-cat">Ropa</span>
+      <div class="ba-slide">
+        <div class="ba-pair">
+          <div class="ba-img-wrap">
+            <img src="/static/antes_top.jpg" alt="Remera antes">
+            <span class="ba-label before">Antes</span>
+          </div>
+          <div class="ba-arrow-mid">→</div>
+          <div class="ba-img-wrap">
+            <img src="/static/despues_top.jpg" alt="Remera despues">
+            <span class="ba-label after">Despues</span>
           </div>
         </div>
-        <div class="carousel-img">
-          <img src="/static/img3.jpg" alt="Auriculares antes/despues">
-          <div class="slide-label">
-            <span>Auriculares · Estilo elegante</span>
-            <span class="slide-cat">Electronica</span>
-          </div>
-        </div>
-        <div class="carousel-img">
-          <img src="/static/img4.jpg" alt="Auriculares antes/despues">
-          <div class="slide-label">
-            <span>Auriculares · Estilo realista</span>
-            <span class="slide-cat">Electronica</span>
-          </div>
-        </div>
+        <div class="ba-caption">Remera · Fondo blanco profesional</div>
       </div>
 
+      <div class="ba-slide">
+        <div class="ba-pair">
+          <div class="ba-img-wrap">
+            <img src="/static/antes_zapa.jpg" alt="Zapatilla antes">
+            <span class="ba-label before">Antes</span>
+          </div>
+          <div class="ba-arrow-mid">→</div>
+          <div class="ba-img-wrap">
+            <img src="/static/despues_zapa.jpg" alt="Zapatilla despues">
+            <span class="ba-label after">Despues</span>
+          </div>
+        </div>
+        <div class="ba-caption">Zapatilla · Fondo blanco profesional</div>
+      </div>
+
+    </div>
+
+    <div class="ba-controls">
+      <button class="ba-btn" id="baPrev">←</button>
+      <div class="ba-dots" id="baDots">
+        <div class="ba-dot active"></div>
+        <div class="ba-dot"></div>
+        <div class="ba-dot"></div>
+      </div>
+      <button class="ba-btn" id="baNext">→</button>
     </div>
   </div>
+</section>
 
-  <div class="carousel-controls">
-    <div class="carousel-dots" id="carouselDots">
-      <div class="carousel-dot active" onclick="goToSlide(0)"></div>
-      <div class="carousel-dot" onclick="goToSlide(1)"></div>
+<!-- COMO FUNCIONA (celular) -->
+<section class="phone-demo-section">
+  <div class="phone-demo-inner">
+    <div class="phone-demo-text">
+      <div class="section-num">02 — ASI FUNCIONA</div>
+      <h2>Un mensaje de WhatsApp.<br>Resultado en 30 segundos.</h2>
+      <ul class="phone-demo-steps">
+        <li><span>01</span> Manda la foto con el nombre del producto</li>
+        <li><span>02</span> Elegi el estilo: Realista, Modo IA o Fondo blanco/negro</li>
+        <li><span>03</span> Recibis imagen profesional y descripcion lista para publicar</li>
+      </ul>
+      <a href="https://wa.me/14155238886?text=Hola!%20quiero%20probar%20PostIA" class="btn-primary">Probarlo ahora →</a>
     </div>
-    <div class="carousel-arrows">
-      <button class="carousel-btn" onclick="prevSlide()">←</button>
-      <button class="carousel-btn" onclick="nextSlide()">→</button>
+    <div class="phone-demo-device">
+      <div class="phone">
+        <div class="phone-notch-bar"><div class="phone-notch"></div></div>
+        <div class="wa-header">
+          <div class="wa-back">‹</div>
+          <div class="wa-avatar">P</div>
+          <div class="wa-info">
+            <strong>PostIA</strong>
+            <span>en linea</span>
+          </div>
+        </div>
+        <div class="wa-chat" id="waChat"></div>
+        <div class="wa-input-bar">
+          <div class="wa-input-text">Escribe un mensaje</div>
+          <div class="wa-send-btn">&#9658;</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1462,29 +1568,34 @@
 
   runChat();
 
-  // ── Gallery carousel ──
-  let current = 0;
-  const total = 2;
-  const track = document.getElementById('carouselTrack');
-  const dots = document.querySelectorAll('.carousel-dot');
-  let autoTimer = setInterval(nextSlide, 4500);
+  // ── Antes/Despues carousel ──
+  let baCurrent = 0;
+  const baTotal = 3;
+  const baTrack = document.getElementById('baTrack');
+  const baDotEls = document.querySelectorAll('.ba-dot');
+  let baAuto = setInterval(baNext, 4000);
 
-  function goToSlide(n) {
-    current = (n + total) % total;
-    track.style.transform = `translateX(-${current * 100}%)`;
-    dots.forEach((d, i) => d.classList.toggle('active', i === current));
-    clearInterval(autoTimer);
-    autoTimer = setInterval(nextSlide, 4500);
+  function baGo(n) {
+    baCurrent = (n + baTotal) % baTotal;
+    baTrack.style.transform = `translateX(-${baCurrent * 100}%)`;
+    baDotEls.forEach((d, i) => d.classList.toggle('active', i === baCurrent));
+    clearInterval(baAuto);
+    baAuto = setInterval(baNext, 4000);
   }
-  function nextSlide() { goToSlide(current + 1); }
-  function prevSlide() { goToSlide(current - 1); }
+  function baNext() { baGo(baCurrent + 1); }
+  function baPrev() { baGo(baCurrent - 1); }
+
+  document.getElementById('baNext').addEventListener('click', baNext);
+  document.getElementById('baPrev').addEventListener('click', baPrev);
+  baDotEls.forEach((d, i) => d.addEventListener('click', () => baGo(i)));
+
+  baTrack.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  baTrack.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? baNext() : baPrev();
+  });
 
   let touchStartX = 0;
-  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
-  track.addEventListener('touchend', e => {
-    const diff = touchStartX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) diff > 0 ? nextSlide() : prevSlide();
-  });
 </script>
 </body>
 </html>
