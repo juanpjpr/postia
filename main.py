@@ -377,24 +377,15 @@ async def webhook(
         )
         return twiml("Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.")
 
-    # Paso 2: escribio el fondo → pregunta plataforma
-    if state == "waiting_fondo" and body:
-        sessions[From] = {**session, "state": "waiting_platform", "fondo_desc": body}
-        return twiml(
-            "Donde vas a publicar?\n"
-            "1 - Instagram\n"
-            "2 - Mercado Libre\n"
-            "3 - Facebook\n"
-            "4 - WhatsApp\n"
-            "5 - Todos"
-        )
-
-    # Paso 2b: eligio fondo basico (blanco o negro)
+    # Paso 2: eligio fondo (blanco, negro, o descripcion libre para pro)
     if state == "waiting_fondo_basico":
+        plan = session.get("plan", "trial")
         if body == "1":
-            fondo = "fondo blanco puro, estudio profesional"
+            fondo = "pure white background, professional studio"
         elif body == "2":
-            fondo = "fondo negro puro, iluminacion dramatica de estudio"
+            fondo = "pure black background, dramatic studio lighting"
+        elif plan in ("pro", "ilimitado") and body:
+            fondo = body
         else:
             return twiml("Respondé 1 para fondo blanco o 2 para fondo negro.")
         sessions[From] = {**session, "state": "waiting_platform", "fondo_desc": fondo}
@@ -409,23 +400,20 @@ async def webhook(
 
     # Paso 1: eligio categoria → pregunta fondo segun plan
     if state == "waiting_categoria" and body in CATEGORIAS:
-        acceso = db.verificar_acceso.__wrapped__(From) if hasattr(db.verificar_acceso, '__wrapped__') else None
         row = db._get(From)
         plan = row.get("plan", "trial") if row else "trial"
-        sessions[From] = {**session, "categoria": CATEGORIAS[body]}
+        sessions[From] = {**session, "categoria": CATEGORIAS[body], "plan": plan, "state": "waiting_fondo_basico"}
         if plan in ("pro", "ilimitado"):
-            sessions[From] = {**sessions[From], "state": "waiting_fondo"}
             return twiml(
-                "Que fondo queres para tu foto?\n\n"
-                "Describilo como quieras. Ejemplos:\n"
-                "• _fondo blanco_\n"
+                "Que fondo queres?\n"
+                "1 - Fondo blanco (ideal para Mercado Libre)\n"
+                "2 - Fondo negro (premium)\n\n"
+                "O escribi el fondo que quieras. Ej:\n"
                 "• _horno de barro_\n"
-                "• _parrilla al aire libre_\n"
-                "• _cocina moderna_\n"
-                "• _fondo negro_"
+                "• _noche de verano_\n"
+                "• _cocina moderna_"
             )
         else:
-            sessions[From] = {**sessions[From], "state": "waiting_fondo_basico"}
             return twiml(
                 "Que fondo queres?\n"
                 "1 - Fondo blanco (ideal para Mercado Libre)\n"
