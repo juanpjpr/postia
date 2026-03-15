@@ -537,6 +537,17 @@ async def webhook_mp(request: Request):
     return JSONResponse({"ok": True})
 
 
+@app.get("/admin/info")
+def admin_info(secret: str = ""):
+    if secret != "postia2026":
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    with db._get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT phone, plan, estado FROM suscripciones")
+        rows = cur.fetchall()
+    return {"database_url": bool(db.DATABASE_URL), "users": [{"phone": r[0], "plan": r[1], "estado": r[2]} for r in rows]}
+
+
 @app.get("/admin/set-pro-all")
 def admin_set_pro_all(secret: str = ""):
     if secret != "postia2026":
