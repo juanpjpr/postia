@@ -301,36 +301,25 @@ def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
     return response.choices[0].message.content.strip()
 
 
-def _procesar(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list, foto_url: str = None):
-    primera = plataformas[0]
-    imagen_url = generar_imagen(descripcion, categoria, estilo, primera, foto_url)
-    texto = generar_descripcion(descripcion, estilo, primera)
-    respuesta = f"*{primera}*\n\n{texto}"
-    for plat in plataformas[1:]:
-        texto_extra = generar_descripcion(descripcion, estilo, plat)
-        respuesta += f"\n\n---\n*{plat}*\n\n{texto_extra}"
-    enviar_mensaje(to, respuesta, media_url=imagen_url)
-
-
 def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list, foto_url: str = None):
-    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
     import traceback
-
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(_procesar, to, descripcion, categoria, estilo, plataformas, foto_url)
-        try:
-            future.result(timeout=120)
-        except FuturesTimeout:
-            print(f"[timeout] generacion abortada para {to}")
-            db.reembolsar_uso(to)
-            enviar_mensaje(to, "La generacion tardo demasiado y la cancelamos. No te descontamos el uso, podes intentar de nuevo.")
-        except Exception as e:
-            tb = traceback.format_exc()
-            print(f"[error] {e}\n{tb}")
-            with open("error.log", "a") as f:
-                f.write(f"Error: {e}\n{tb}\n---\n")
-            db.reembolsar_uso(to)
-            enviar_mensaje(to, "Algo fallo al generar el contenido. No te descontamos el uso, podes intentar de nuevo.")
+    try:
+        print(f"[proceso] iniciando para {to} | estilo={estilo} | plataformas={plataformas}")
+        primera = plataformas[0]
+        imagen_url = generar_imagen(descripcion, categoria, estilo, primera, foto_url)
+        print(f"[proceso] imagen generada: {imagen_url}")
+        texto = generar_descripcion(descripcion, estilo, primera)
+        respuesta = f"*{primera}*\n\n{texto}"
+        for plat in plataformas[1:]:
+            texto_extra = generar_descripcion(descripcion, estilo, plat)
+            respuesta += f"\n\n---\n*{plat}*\n\n{texto_extra}"
+        enviar_mensaje(to, respuesta, media_url=imagen_url)
+        print(f"[proceso] mensaje enviado a {to}")
+    except Exception as e:
+        tb = traceback.format_exc()
+        print(f"[error] {e}\n{tb}")
+        db.reembolsar_uso(to)
+        enviar_mensaje(to, "Algo fallo al generar el contenido. No te descontamos el uso, podes intentar de nuevo.")
 
 
 @app.get("/")
