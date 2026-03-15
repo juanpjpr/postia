@@ -395,6 +395,11 @@ def root():
     return FileResponse("static/index.html")
 
 
+@app.get("/terminos")
+def terminos():
+    return FileResponse("static/terminos.html")
+
+
 @app.post("/webhook")
 async def webhook(
     background_tasks: BackgroundTasks,
