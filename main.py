@@ -537,6 +537,17 @@ async def webhook_mp(request: Request):
     return JSONResponse({"ok": True})
 
 
+@app.get("/admin/init-db")
+def admin_init_db(secret: str = ""):
+    if secret != "postia2026":
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    try:
+        db.init_db()
+        return {"ok": True}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 @app.get("/admin/env")
 def admin_env(secret: str = ""):
     if secret != "postia2026":

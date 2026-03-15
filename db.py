@@ -31,8 +31,8 @@ def _row_to_dict(cursor, row):
 # ── init ──────────────────────────────────────────────────────────────────────
 
 def init_db():
-    ph = _placeholder()
-    with _get_conn() as conn:
+    conn = _get_conn()
+    try:
         cur = conn.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS suscripciones (
@@ -46,16 +46,29 @@ def init_db():
                 plan             TEXT DEFAULT 'trial'
             )
         """)
-        # Migraciones suaves: agregar columnas si no existen
-        for migration in [
-            "ALTER TABLE suscripciones ADD COLUMN fotos_restantes INTEGER DEFAULT -1",
-            "ALTER TABLE suscripciones ADD COLUMN negocio_desc TEXT",
-        ]:
-            try:
-                cur.execute(migration)
-            except Exception:
-                pass
         conn.commit()
+        print("[db] tabla suscripciones OK")
+    except Exception as e:
+        conn.rollback()
+        print(f"[db] error creando tabla: {e}")
+        raise
+    finally:
+        conn.close()
+
+    # Migraciones suaves en conexiones separadas
+    for migration in [
+        "ALTER TABLE suscripciones ADD COLUMN fotos_restantes INTEGER DEFAULT -1",
+        "ALTER TABLE suscripciones ADD COLUMN negocio_desc TEXT",
+    ]:
+        c = _get_conn()
+        try:
+            cur = c.cursor()
+            cur.execute(migration)
+            c.commit()
+        except Exception:
+            c.rollback()
+        finally:
+            c.close()
 
 
 # ── queries ───────────────────────────────────────────────────────────────────
