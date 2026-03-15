@@ -339,9 +339,11 @@ def procesar_en_background(to: str, descripcion: str, categoria: str, fondo_desc
         total = db.incrementar_total_usos(to)
         if total > 0 and total % 5 == 0:
             enviar_mensaje(to,
-                "Una pregunta rapida: *como te esta yendo con PostIA?*\n\n"
-                "Respondé con una palabra o lo que quieras contarnos. "
-                "Tu opinion nos ayuda a mejorar. (Podes ignorar este mensaje si no queres responder)"
+                "Una pregunta rapida sobre tu experiencia con PostIA:\n\n"
+                "1 - Mala\n"
+                "2 - Buena\n"
+                "3 - Muy buena\n\n"
+                "_(Podes ignorar este mensaje si no queres responder)_"
             )
             sessions[to] = {**sessions.get(to, {}), "state": "waiting_feedback"}
     except Exception as e:
@@ -431,11 +433,24 @@ async def webhook(
                 "2 - Fondo negro (premium)"
             )
 
-    # Feedback
-    if state == "waiting_feedback" and body:
-        db.guardar_consulta(From, "feedback", body)
+    # Feedback - eligio calificacion
+    if state == "waiting_feedback" and body in ("1", "2", "3"):
+        calificaciones = {"1": "mala", "2": "buena", "3": "muy buena"}
+        cal = calificaciones[body]
+        if body in ("1", "2"):
+            sessions[From] = {**session, "state": "waiting_feedback_detalle", "feedback_cal": cal}
+            return twiml("Gracias por responder. Que mejorarias?")
+        else:
+            db.guardar_consulta(From, "feedback", f"Calificacion: {cal}")
+            sessions[From] = {**session, "state": None}
+            return twiml("Gracias! Nos alegra que te este yendo bien. Cuando quieras, manda una foto.")
+
+    # Feedback - escribio que mejoraria
+    if state == "waiting_feedback_detalle" and body:
+        cal = session.get("feedback_cal", "")
+        db.guardar_consulta(From, "feedback", f"Calificacion: {cal} | Mejora: {body}")
         sessions[From] = {**session, "state": None}
-        return twiml("Gracias por tu feedback! Nos ayuda un monton. Cuando quieras, manda una foto.")
+        return twiml("Gracias por tu opinion, lo tomamos en cuenta. Cuando quieras, manda una foto.")
 
     # Comando: ayuda / consulta
     if body.lower() in ("ayuda", "consulta", "contacto", "soporte"):
