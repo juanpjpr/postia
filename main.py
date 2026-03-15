@@ -102,7 +102,7 @@ def twiml(mensaje: str) -> PlainTextResponse:
 
 def enviar_mensaje(to: str, texto: str, media_url: str = None):
     if media_url:
-        msg1 = twilio.messages.create(from_=TWILIO_NUMBER, to=to, body="", media_url=[media_url])
+        msg1 = twilio.messages.create(from_=TWILIO_NUMBER, to=to, body=" ", media_url=[media_url])
         print(f"[twilio send] imagen sid={msg1.sid} status={msg1.status}")
         msg2 = twilio.messages.create(from_=TWILIO_NUMBER, to=to, body=texto)
         print(f"[twilio send] texto sid={msg2.sid} status={msg2.status}")
