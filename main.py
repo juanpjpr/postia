@@ -567,6 +567,25 @@ def admin_info(secret: str = ""):
     return {"database_url": bool(db.DATABASE_URL), "users": [{"phone": r[0], "plan": r[1], "estado": r[2]} for r in rows]}
 
 
+@app.get("/admin/set-pro")
+def admin_set_pro(phone: str, secret: str = ""):
+    if secret != "postia2026":
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    ph = db._placeholder()
+    conn = db._get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"""
+            INSERT INTO suscripciones (phone, estado, plan, usos_gratis, fotos_restantes)
+            VALUES ({ph},{ph},{ph},{ph},{ph})
+            ON CONFLICT(phone) DO UPDATE SET estado=EXCLUDED.estado, plan=EXCLUDED.plan, fotos_restantes=EXCLUDED.fotos_restantes
+        """, (phone, "activo", "pro", 0, 999))
+        conn.commit()
+    finally:
+        conn.close()
+    return {"ok": True, "phone": phone}
+
+
 @app.get("/admin/set-pro-all")
 def admin_set_pro_all(secret: str = ""):
     if secret != "postia2026":
