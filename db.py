@@ -55,10 +55,40 @@ def init_db():
     finally:
         conn.close()
 
+    # Tabla consultas
+    conn2 = _get_conn()
+    try:
+        cur = conn2.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS consultas (
+                id               SERIAL PRIMARY KEY,
+                phone            TEXT,
+                tipo             TEXT,
+                mensaje          TEXT,
+                fecha            TEXT
+            )
+        """ if DATABASE_URL else """
+            CREATE TABLE IF NOT EXISTS consultas (
+                id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                phone            TEXT,
+                tipo             TEXT,
+                mensaje          TEXT,
+                fecha            TEXT
+            )
+        """)
+        conn2.commit()
+        print("[db] tabla consultas OK")
+    except Exception as e:
+        conn2.rollback()
+        print(f"[db] error creando tabla consultas: {e}")
+    finally:
+        conn2.close()
+
     # Migraciones suaves en conexiones separadas
     for migration in [
         "ALTER TABLE suscripciones ADD COLUMN fotos_restantes INTEGER DEFAULT -1",
         "ALTER TABLE suscripciones ADD COLUMN negocio_desc TEXT",
+        "ALTER TABLE suscripciones ADD COLUMN total_usos INTEGER DEFAULT 0",
     ]:
         c = _get_conn()
         try:
@@ -154,6 +184,46 @@ def reembolsar_uso(phone: str):
         elif row["estado"] == "activo" and (row["fotos_restantes"] or 0) >= 0:
             cur.execute(f"UPDATE suscripciones SET fotos_restantes=fotos_restantes+1 WHERE phone={ph}", (phone,))
         conn.commit()
+
+
+def guardar_consulta(phone: str, tipo: str, mensaje: str):
+    ph = _placeholder()
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            f"INSERT INTO consultas (phone, tipo, mensaje, fecha) VALUES ({ph},{ph},{ph},{ph})",
+            (phone, tipo, mensaje, datetime.now().isoformat())
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_consultas() -> list:
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id, phone, tipo, mensaje, fecha FROM consultas ORDER BY fecha DESC")
+        rows = cur.fetchall()
+        return [_row_to_dict(cur, r) for r in rows]
+    finally:
+        conn.close()
+
+
+def incrementar_total_usos(phone: str) -> int:
+    """Incrementa el contador total de usos y retorna el nuevo valor."""
+    ph = _placeholder()
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"UPDATE suscripciones SET total_usos=COALESCE(total_usos,0)+1 WHERE phone={ph}", (phone,))
+        conn.commit()
+        cur.execute(f"SELECT total_usos FROM suscripciones WHERE phone={ph}", (phone,))
+        row = cur.fetchone()
+        return row[0] if row else 0
+    finally:
+        conn.close()
 
 
 def activar_suscripcion(phone: str, payment_id: str, plan: str = "basico"):

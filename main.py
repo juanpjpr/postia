@@ -334,6 +334,16 @@ def procesar_en_background(to: str, descripcion: str, categoria: str, fondo_desc
             respuesta += f"\n\n---\n*{plat}*\n\n{texto_extra}"
         enviar_mensaje(to, respuesta, media_url=imagen_url)
         print(f"[proceso] mensaje enviado a {to}")
+
+        # Feedback cada 5 usos
+        total = db.incrementar_total_usos(to)
+        if total > 0 and total % 5 == 0:
+            enviar_mensaje(to,
+                "Una pregunta rapida: *como te esta yendo con PostIA?*\n\n"
+                "Respondé con una palabra o lo que quieras contarnos. "
+                "Tu opinion nos ayuda a mejorar. (Podes ignorar este mensaje si no queres responder)"
+            )
+            sessions[to] = {**sessions.get(to, {}), "state": "waiting_feedback"}
     except Exception as e:
         tb = traceback.format_exc()
         print(f"[error] {e}\n{tb}")
@@ -421,6 +431,28 @@ async def webhook(
                 "2 - Fondo negro (premium)"
             )
 
+    # Feedback
+    if state == "waiting_feedback" and body:
+        db.guardar_consulta(From, "feedback", body)
+        sessions[From] = {**session, "state": None}
+        return twiml("Gracias por tu feedback! Nos ayuda un monton. Cuando quieras, manda una foto.")
+
+    # Comando: ayuda / consulta
+    if body.lower() in ("ayuda", "consulta", "contacto", "soporte"):
+        sessions[From] = {**session, "state": "waiting_consulta"}
+        return twiml(
+            "Claro, con gusto te ayudo.\n\n"
+            "Contame tu consulta, reclamo o sugerencia y te respondo a la brevedad."
+        )
+
+    if state == "waiting_consulta" and body:
+        db.guardar_consulta(From, "consulta", body)
+        sessions[From] = {**session, "state": None}
+        return twiml(
+            "Gracias, recibimos tu mensaje. Te respondemos pronto por aca.\n\n"
+            "Cuando quieras, manda una foto para generar una publicacion."
+        )
+
     # Comando: guardar descripcion del negocio
     if body.lower().startswith("mi negocio:"):
         desc = body[len("mi negocio:"):].strip()
@@ -434,14 +466,10 @@ async def webhook(
         sessions[From] = {"state": "welcomed"}
         return twiml(
             "Hola! Soy *PostIA*.\n\n"
-            "Transformo fotos de tus productos en imagenes profesionales y descripciones listas para publicar, en segundos.\n\n"
-            "Funciona asi:\n"
-            "1. Manda una foto de tu producto con el nombre\n"
-            "2. Elegi categoria, estilo y plataforma\n"
-            "3. En segundos recibi imagen mejorada + descripcion lista\n\n"
-            "Funciona para Instagram, Mercado Libre, Facebook y WhatsApp.\n\n"
-            "Cuando quieras arrancar, manda una foto de tu producto con el nombre como texto. "
-            "Ejemplo: *asado de tira con chimichurri*"
+            "Transformo fotos de tus productos en publicaciones profesionales listas para Instagram, Mercado Libre, Facebook y WhatsApp.\n\n"
+            "Para arrancar, manda una foto de tu producto con el nombre como texto.\n"
+            "Ejemplo: *zapatillas Nike negras*\n\n"
+            "Si tenes alguna consulta, escribi *ayuda*."
         )
 
     # Inicio: foto + descripcion
@@ -585,6 +613,16 @@ def admin_set_pro(phone: str, secret: str = ""):
     finally:
         conn.close()
     return {"ok": True, "phone": phone}
+
+
+@app.get("/admin/consultas")
+def admin_consultas(secret: str = "", tipo: str = ""):
+    if secret != "postia2026":
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    rows = db.get_consultas()
+    if tipo:
+        rows = [r for r in rows if r["tipo"] == tipo]
+    return {"total": len(rows), "consultas": rows}
 
 
 @app.get("/admin/set-pro-all")
