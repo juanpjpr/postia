@@ -537,6 +537,20 @@ async def webhook_mp(request: Request):
     return JSONResponse({"ok": True})
 
 
+@app.get("/admin/set-pro-all")
+def admin_set_pro_all(secret: str = ""):
+    if secret != "postia2026":
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    ph = db._placeholder()
+    with db._get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("UPDATE suscripciones SET plan='pro', estado='activo', fotos_restantes=999")
+        conn.commit()
+        cur.execute("SELECT phone, plan, estado FROM suscripciones")
+        rows = cur.fetchall()
+    return {"updated": [r[0] for r in rows]}
+
+
 @app.get("/pago-exitoso")
 def pago_exitoso():
     return {"mensaje": "Pago recibido! Volve a WhatsApp, tu suscripcion ya esta activa."}
