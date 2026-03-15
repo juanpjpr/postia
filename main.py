@@ -46,6 +46,16 @@ ESTILOS = {
     "4": "fondo_limpio",
 }
 
+# Pregunta especifica por categoria en modo detallado
+PREGUNTAS_DETALLE = {
+    "comida":      "Precio o promo del dia? Ej: *Lomo completo $8.500*\n(o escribi *0* para omitir)",
+    "ropa":        "Talle disponible, colores y precio? Ej: *S/M/L, negro y blanco, $25.000*\n(o escribi *0* para omitir)",
+    "electronica": "Marca y modelo exacto? Ej: *Samsung Galaxy A54 128GB negro*\n(Esto mejora mucho el SEO en ML)\n(o escribi *0* para omitir)",
+    "hogar":       "Medidas, materiales y precio? Ej: *Mesa 1.20x0.80m madera maciza, $95.000*\n(o escribi *0* para omitir)",
+    "belleza":     "Ingredientes principales o beneficio clave? Ej: *Con vitamina C, apto piel sensible*\n(o escribi *0* para omitir)",
+    "otro":        "Algun detalle extra que quieras destacar? Ej: precio, garantia, materiales...\n(o escribi *0* para omitir)",
+}
+
 PLATAFORMAS = {
     "1": ["Instagram"],
     "2": ["Mercado Libre"],
@@ -329,10 +339,9 @@ async def webhook(
     session = sessions.get(From, {})
     state = session.get("state")
 
-    # Paso 3: eligio plataforma
+    # Paso 4: eligio plataforma → genera
     if state == "waiting_platform" and body in PLATAFORMAS:
         plataformas = PLATAFORMAS[body]
-        session["plataformas"] = plataformas
         sessions[From] = {**session, "state": "done"}
         background_tasks.add_task(
             procesar_en_background,
@@ -343,16 +352,9 @@ async def webhook(
             plataformas,
             session.get("foto_url"),
         )
-        msg = "Generando tu contenido... En unos segundos te llega la imagen y descripcion lista."
-        if "Mercado Libre" in plataformas:
-            msg += (
-                "\n\n_Tip ML: si tu producto tiene marca y modelo especifico "
-                "(ej: 'Auriculares Sony WH-1000XM5') aclararlo en la descripcion "
-                "mejora mucho el SEO y la confianza del comprador._"
-            )
-        return twiml(msg)
+        return twiml("Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.")
 
-    # Paso 2: eligio estilo
+    # Paso 3: eligio estilo
     if state == "waiting_estilo" and body in ESTILOS:
         sessions[From] = {**session, "state": "waiting_platform", "estilo": ESTILOS[body]}
         return twiml(
@@ -364,15 +366,48 @@ async def webhook(
             "5 - Todos"
         )
 
-    # Paso 1: eligio categoria
-    if state == "waiting_categoria" and body in CATEGORIAS:
-        sessions[From] = {**session, "state": "waiting_estilo", "categoria": CATEGORIAS[body]}
+    # Paso 2b: respondio la pregunta de detalle (modo detallado)
+    if state == "waiting_detalle":
+        if body and body != "0":
+            # Agrega el detalle a la descripcion
+            desc_completa = session["descripcion"] + " — " + body
+        else:
+            desc_completa = session["descripcion"]
+        sessions[From] = {**session, "state": "waiting_estilo", "descripcion": desc_completa}
         return twiml(
             "Que estilo queres?\n"
             "1 - Realista y profesional\n"
             "2 - Llamativo y exagerado\n"
             "3 - Elegante y premium\n"
             "4 - Limpiar fondo (fondo blanco profesional)"
+        )
+
+    # Paso 2a: eligio modo (rapido o detallado)
+    if state == "waiting_modo":
+        if body == "1":
+            # Rapido: va directo al estilo
+            sessions[From] = {**session, "state": "waiting_estilo"}
+            return twiml(
+                "Que estilo queres?\n"
+                "1 - Realista y profesional\n"
+                "2 - Llamativo y exagerado\n"
+                "3 - Elegante y premium\n"
+                "4 - Limpiar fondo (fondo blanco profesional)"
+            )
+        if body == "2":
+            # Detallado: pregunta especifica segun categoria
+            categoria = session.get("categoria", "otro")
+            pregunta = PREGUNTAS_DETALLE.get(categoria, PREGUNTAS_DETALLE["otro"])
+            sessions[From] = {**session, "state": "waiting_detalle"}
+            return twiml(pregunta)
+
+    # Paso 1: eligio categoria → pregunta modo
+    if state == "waiting_categoria" and body in CATEGORIAS:
+        sessions[From] = {**session, "state": "waiting_modo", "categoria": CATEGORIAS[body]}
+        return twiml(
+            "Como queres generar el contenido?\n\n"
+            "1 - Rapido (uso la descripcion que me mandaste)\n"
+            "2 - Personalizado (te hago una pregunta para mejorar el resultado)"
         )
 
     # Primer contacto: cualquier mensaje de un usuario nuevo sin sesion
