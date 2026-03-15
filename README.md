@@ -4,6 +4,20 @@
 
 ---
 
+## Roadmap
+
+- [x] Bot de WhatsApp funcional con flujo completo
+- [x] Generación de imagen con GPT-image-1 y FLUX Kontext
+- [x] Sistema de suscripciones con MercadoPago (3 planes)
+- [x] Landing page deployada en Railway
+- [x] Árbol de decisiones: modo rápido vs detallado por categoría
+- [ ] **Migrar DB a PostgreSQL** — SQLite en Railway se resetea en cada deploy
+- [ ] **Testear flujo de pago completo** con tarjetas de prueba de MercadoPago
+- [ ] **Dominio propio** para la landing (ej: postia.app)
+- [ ] **Resolver descarga de imágenes Twilio** para que FLUX Kontext funcione en producción
+
+---
+
 ## La Idea
 
 Bot de WhatsApp que recibe una foto + descripción de un plato o producto y devuelve automáticamente una **imagen mejorada con IA + descripción lista para publicar**, optimizada según la plataforma elegida. El cliente paga suscripción mensual vía MercadoPago.

@@ -7,3 +7,4 @@ httpx
 twilio
 fal-client
 mercadopago
+psycopg2-binary
