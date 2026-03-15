@@ -217,7 +217,7 @@ def generar_imagen(descripcion: str, categoria: str, fondo_desc: str, plataforma
                     arguments={
                         "prompt": flux_prompt,
                         "image_url": fal_image_url,
-                        "guidance_scale": 3.0 if estilo == "fondo_limpio" else 2.5,
+                        "guidance_scale": 2.5,
                         "num_inference_steps": 28,
                     },
                 )
