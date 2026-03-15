@@ -128,12 +128,18 @@ def generar_prompt_imagen(descripcion: str, categoria: str, estilo: str, platafo
         "WhatsApp": "formato cuadrado, alto contraste, para estado de WhatsApp",
     }
     contexto = f" El negocio es: {negocio_desc}." if negocio_desc else ""
+    extra_ropa = (
+        " The garment must be displayed on a ghost mannequin (invisible body effect) or worn by a model. "
+        "If the original is flat on the floor, generate it with natural 3D shape and volume. "
+        "Remove all wrinkles. Professional fashion photography."
+    ) if categoria == "ropa" else ""
     meta_prompt = (
         f"Eres un experto en fotografía de productos y marketing visual para redes sociales.{contexto} "
         f"Dame SOLO el prompt en inglés para generar con IA la mejor imagen posible para vender '{descripcion}' "
         f"(categoria: {categoria}) en {plataforma}. "
         f"Estilo deseado: {estilos_desc.get(estilo, estilo)}. "
         f"Formato: {formato_desc.get(plataforma, '')}. "
+        f"{extra_ropa}"
         f"El prompt debe especificar iluminación, fondo, composición, ángulo, ambiente y detalles visuales del producto. "
         f"Maximo 120 palabras. Responde SOLO con el prompt, sin explicaciones ni comillas."
     )
@@ -237,13 +243,23 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
                     f"Do not replace or remove the product. No text overlays. Optimized for {plataforma}."
                 )
             else:  # realista
-                flux_prompt = (
-                    f"Professional e-commerce product photo. "
-                    f"Improve ONLY the studio lighting, brightness, contrast and sharpness. "
-                    f"The product must remain 100% identical: same color, material, texture, shape and all details. "
-                    f"Do not replace, add or remove any object. Clean neutral background. "
-                    f"Optimized for {plataforma}. Photorealistic."
-                )
+                if categoria == "ropa":
+                    flux_prompt = (
+                        f"Professional clothing product photo. "
+                        f"Improve ONLY the studio lighting, brightness, contrast and sharpness. "
+                        f"Remove wrinkles and creases from the fabric, restore natural smooth texture. "
+                        f"The garment must remain 100% identical: same color, print, cut and all details. "
+                        f"Do not change the position or shape of the garment. Clean neutral background. "
+                        f"Optimized for {plataforma}. Photorealistic."
+                    )
+                else:
+                    flux_prompt = (
+                        f"Professional e-commerce product photo. "
+                        f"Improve ONLY the studio lighting, brightness, contrast and sharpness. "
+                        f"The product must remain 100% identical: same color, material, texture, shape and all details. "
+                        f"Do not replace, add or remove any object. Clean neutral background. "
+                        f"Optimized for {plataforma}. Photorealistic."
+                    )
             print(f"[prompt:flux] {flux_prompt}")
             try:
                 result = fal_client.run(
