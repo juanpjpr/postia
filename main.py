@@ -319,7 +319,7 @@ def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: st
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(_procesar, to, descripcion, categoria, estilo, plataformas, foto_url)
         try:
-            future.result(timeout=60)
+            future.result(timeout=120)
         except FuturesTimeout:
             print(f"[timeout] generacion abortada para {to}")
             db.reembolsar_uso(to)
