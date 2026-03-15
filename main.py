@@ -40,16 +40,6 @@ CATEGORIAS = {
     "6": "otro",
 }
 
-ESTILOS = {
-    "1": "realista",
-    "2": "llamativo",
-    "3": "fondo_limpio",  # subpregunta: blanco o negro
-}
-
-COLORES_FONDO = {
-    "1": "fondo_blanco",
-    "2": "fondo_negro",
-}
 
 # Pregunta especifica por categoria en modo detallado
 # El detalle enriquece tanto el prompt de imagen como el de descripcion
@@ -204,7 +194,7 @@ def _descargar_media_twilio(foto_url: str) -> bytes | None:
     return None
 
 
-def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str, foto_url: str = None, negocio_desc: str = None) -> str:
+def generar_imagen(descripcion: str, categoria: str, fondo_desc: str, plataforma: str, foto_url: str = None, negocio_desc: str = None) -> str:
     size = "1536x1024" if plataforma == "Facebook" else "1024x1024"
 
     if foto_url:
@@ -212,54 +202,14 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
         if img_bytes:
             fal_image_url = fal_client.upload(img_bytes, "image/jpeg")
             print(f"[fal] imagen subida: {fal_image_url}")
-            if estilo in ("fondo_limpio", "fondo_blanco"):
-                flux_prompt = (
-                    f"Remove the background completely and replace it with a clean solid white background. "
-                    f"Improve the studio lighting and sharpness of the product. "
-                    f"The product must remain 100% identical: same color, material, texture, shape and all details. "
-                    f"Do not add, replace or remove any part of the product itself. "
-                    f"Result: professional e-commerce photo with pure white background, optimized for {plataforma}."
-                )
-            elif estilo == "fondo_negro":
-                flux_prompt = (
-                    f"Remove the background completely and replace it with a pure solid black background. "
-                    f"Add dramatic studio lighting to highlight the product with contrast. "
-                    f"The product must remain 100% identical: same color, material, texture, shape and all details. "
-                    f"Do not add, replace or remove any part of the product itself. "
-                    f"Result: premium product photo with pure black background, optimized for {plataforma}."
-                )
-            elif estilo == "llamativo":
-                flux_prompt = (
-                    f"Keep the exact same product — same shape, color, material and all details. "
-                    f"Enhance with vibrant, eye-catching lighting and a bold colorful background. "
-                    f"Make it look dynamic and energetic, like a promotional ad. "
-                    f"Do not replace or remove the product. Optimized for {plataforma}."
-                )
-            elif estilo == "elegante":
-                flux_prompt = (
-                    f"Keep the exact same product — same shape, color, material and all details. "
-                    f"Enhance with soft, premium studio lighting on a clean minimalist background. "
-                    f"Make it look luxurious and high-end, like a luxury brand campaign. "
-                    f"Do not replace or remove the product. No text overlays. Optimized for {plataforma}."
-                )
-            else:  # realista
-                if categoria == "ropa":
-                    flux_prompt = (
-                        f"Professional clothing product photo. "
-                        f"Improve ONLY the studio lighting, brightness, contrast and sharpness. "
-                        f"Remove wrinkles and creases from the fabric, restore natural smooth texture. "
-                        f"The garment must remain 100% identical: same color, print, cut and all details. "
-                        f"Do not change the position or shape of the garment. Clean neutral background. "
-                        f"Optimized for {plataforma}. Photorealistic."
-                    )
-                else:
-                    flux_prompt = (
-                        f"Professional e-commerce product photo. "
-                        f"Improve ONLY the studio lighting, brightness, contrast and sharpness. "
-                        f"The product must remain 100% identical: same color, material, texture, shape and all details. "
-                        f"Do not replace, add or remove any object. Clean neutral background. "
-                        f"Optimized for {plataforma}. Photorealistic."
-                    )
+            extra_ropa = "Remove wrinkles and creases from the fabric, restore natural smooth texture. The garment must remain 100% identical. " if categoria == "ropa" else ""
+            flux_prompt = (
+                f"Professional product photo. {extra_ropa}"
+                f"Remove the current background and replace it with: {fondo_desc}. "
+                f"The product must remain 100% identical: same color, material, texture, shape and all details. "
+                f"Do not add, replace or remove any part of the product itself. "
+                f"Optimized for {plataforma}. Photorealistic."
+            )
             print(f"[prompt:flux] {flux_prompt}")
             try:
                 result = fal_client.run(
@@ -287,7 +237,7 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
             return f"{BASE_URL}/static/{filename}"
         # Si no se pudo descargar, cae al modo generativo
 
-    prompt = generar_prompt_imagen(descripcion, categoria, estilo, plataforma, negocio_desc=negocio_desc)
+    prompt = generar_prompt_imagen(descripcion, categoria, fondo_desc, plataforma, negocio_desc=negocio_desc)
     response = openai.images.generate(
         model="gpt-image-1",
         prompt=prompt,
@@ -368,18 +318,18 @@ def generar_descripcion(descripcion: str, estilo: str, plataforma: str, negocio_
     return response.choices[0].message.content.strip()
 
 
-def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list, foto_url: str = None, modo: str = "rapido"):
+def procesar_en_background(to: str, descripcion: str, categoria: str, fondo_desc: str, plataformas: list, foto_url: str = None):
     import traceback
     try:
-        negocio_desc = db.get_negocio_desc(to) if modo == "personalizado" else None
-        print(f"[proceso] iniciando para {to} | estilo={estilo} | plataformas={plataformas} | negocio={'si' if negocio_desc else 'no'}")
+        negocio_desc = db.get_negocio_desc(to)
+        print(f"[proceso] iniciando para {to} | fondo={fondo_desc} | plataformas={plataformas}")
         primera = plataformas[0]
-        imagen_url = generar_imagen(descripcion, categoria, estilo, primera, foto_url, negocio_desc=negocio_desc)
+        imagen_url = generar_imagen(descripcion, categoria, fondo_desc, primera, foto_url, negocio_desc=negocio_desc)
         print(f"[proceso] imagen generada: {imagen_url}")
-        texto = generar_descripcion(descripcion, estilo, primera, negocio_desc=negocio_desc)
+        texto = generar_descripcion(descripcion, fondo_desc, primera, negocio_desc=negocio_desc)
         respuesta = f"*{primera}*\n\n{texto}"
         for plat in plataformas[1:]:
-            texto_extra = generar_descripcion(descripcion, estilo, plat, negocio_desc=negocio_desc)
+            texto_extra = generar_descripcion(descripcion, fondo_desc, plat, negocio_desc=negocio_desc)
             respuesta += f"\n\n---\n*{plat}*\n\n{texto_extra}"
         enviar_mensaje(to, respuesta, media_url=imagen_url)
         print(f"[proceso] mensaje enviado a {to}")
@@ -412,7 +362,7 @@ async def webhook(
     session = sessions.get(From, {})
     state = session.get("state")
 
-    # Paso 4: eligio plataforma → genera
+    # Paso 3: eligio plataforma → genera
     if state == "waiting_platform" and body in PLATAFORMAS:
         plataformas = PLATAFORMAS[body]
         sessions[From] = {**session, "state": "done"}
@@ -421,16 +371,15 @@ async def webhook(
             From,
             session["descripcion"],
             session["categoria"],
-            session["estilo"],
+            session["fondo_desc"],
             plataformas,
             session.get("foto_url"),
-            session.get("modo", "rapido"),
         )
         return twiml("Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.")
 
-    # Paso 3b: eligio color de fondo
-    if state == "waiting_color_fondo" and body in COLORES_FONDO:
-        sessions[From] = {**session, "state": "waiting_platform", "estilo": COLORES_FONDO[body]}
+    # Paso 2: escribio el fondo → pregunta plataforma
+    if state == "waiting_fondo" and body:
+        sessions[From] = {**session, "state": "waiting_platform", "fondo_desc": body}
         return twiml(
             "Donde vas a publicar?\n"
             "1 - Instagram\n"
@@ -440,67 +389,48 @@ async def webhook(
             "5 - Todos"
         )
 
-    # Paso 3: eligio estilo
-    if state == "waiting_estilo" and body in ESTILOS:
-        estilo = ESTILOS[body]
-        if estilo == "fondo_limpio":
-            sessions[From] = {**session, "state": "waiting_color_fondo"}
-            return twiml("Que color de fondo queres?\n1 - Blanco (ideal para Mercado Libre)\n2 - Negro (ideal para electronica y premium)")
-        sessions[From] = {**session, "state": "waiting_platform", "estilo": estilo}
-        return twiml(
-            "Donde vas a publicar?\n"
-            "1 - Instagram\n"
-            "2 - Mercado Libre\n"
-            "3 - Facebook\n"
-            "4 - WhatsApp\n"
-            "5 - Todos"
-        )
-
-    # Paso 2b: respondio la pregunta de detalle (modo detallado)
-    if state == "waiting_detalle":
-        categoria = session.get("categoria", "otro")
-        if categoria == "otro":
-            # Para "otro", la respuesta ES el rubro — siempre se usa
-            desc_completa = session["descripcion"] + " — rubro: " + body if body else session["descripcion"]
-        elif body and body != "0":
-            desc_completa = session["descripcion"] + " — " + body
-        else:
-            desc_completa = session["descripcion"]
-        sessions[From] = {**session, "state": "waiting_estilo", "descripcion": desc_completa}
-        return twiml(
-            "Que estilo queres?\n"
-            "1 - Realista (mejora la foto original)\n"
-            "2 - Modo IA (imagen llamativa generada con IA)\n"
-            "3 - Fondo blanco (ideal para vender)"
-        )
-
-    # Paso 2a: eligio modo (rapido o detallado)
-    if state == "waiting_modo":
+    # Paso 2b: eligio fondo basico (blanco o negro)
+    if state == "waiting_fondo_basico":
         if body == "1":
-            # Rapido: va directo al estilo
-            sessions[From] = {**session, "state": "waiting_estilo", "modo": "rapido"}
-            return twiml(
-                "Que estilo queres?\n"
-                "1 - Realista y profesional\n"
-                "2 - Llamativo y exagerado\n"
-                "3 - Elegante y premium\n"
-                "4 - Limpiar fondo (fondo blanco profesional)"
-            )
-        if body == "2":
-            # Detallado: pregunta especifica segun categoria
-            categoria = session.get("categoria", "otro")
-            pregunta = PREGUNTAS_DETALLE.get(categoria, PREGUNTAS_DETALLE["otro"])
-            sessions[From] = {**session, "state": "waiting_detalle", "modo": "personalizado"}
-            return twiml(pregunta)
-
-    # Paso 1: eligio categoria → pregunta modo
-    if state == "waiting_categoria" and body in CATEGORIAS:
-        sessions[From] = {**session, "state": "waiting_modo", "categoria": CATEGORIAS[body]}
+            fondo = "fondo blanco puro, estudio profesional"
+        elif body == "2":
+            fondo = "fondo negro puro, iluminacion dramatica de estudio"
+        else:
+            return twiml("Respondé 1 para fondo blanco o 2 para fondo negro.")
+        sessions[From] = {**session, "state": "waiting_platform", "fondo_desc": fondo}
         return twiml(
-            "Como queres generar el contenido?\n\n"
-            "1 - Rapido (uso la descripcion que me mandaste)\n"
-            "2 - Personalizado (te hago una pregunta para mejorar el resultado)"
+            "Donde vas a publicar?\n"
+            "1 - Instagram\n"
+            "2 - Mercado Libre\n"
+            "3 - Facebook\n"
+            "4 - WhatsApp\n"
+            "5 - Todos"
         )
+
+    # Paso 1: eligio categoria → pregunta fondo segun plan
+    if state == "waiting_categoria" and body in CATEGORIAS:
+        acceso = db.verificar_acceso.__wrapped__(From) if hasattr(db.verificar_acceso, '__wrapped__') else None
+        row = db._get(From)
+        plan = row.get("plan", "trial") if row else "trial"
+        sessions[From] = {**session, "categoria": CATEGORIAS[body]}
+        if plan in ("pro", "ilimitado"):
+            sessions[From] = {**sessions[From], "state": "waiting_fondo"}
+            return twiml(
+                "Que fondo queres para tu foto?\n\n"
+                "Describilo como quieras. Ejemplos:\n"
+                "• _fondo blanco_\n"
+                "• _horno de barro_\n"
+                "• _parrilla al aire libre_\n"
+                "• _cocina moderna_\n"
+                "• _fondo negro_"
+            )
+        else:
+            sessions[From] = {**sessions[From], "state": "waiting_fondo_basico"}
+            return twiml(
+                "Que fondo queres?\n"
+                "1 - Fondo blanco (ideal para Mercado Libre)\n"
+                "2 - Fondo negro (premium)"
+            )
 
     # Comando: guardar descripcion del negocio
     if body.lower().startswith("mi negocio:"):
