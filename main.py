@@ -208,7 +208,8 @@ def generar_imagen(descripcion: str, categoria: str, fondo_desc: str, plataforma
                 f"Remove the current background and replace it with: {fondo_desc}. "
                 f"The product must remain 100% identical: same color, material, texture, shape and all details. "
                 f"Do not add, replace or remove any part of the product itself. "
-                f"Optimized for {plataforma}. Photorealistic."
+                f"Optimized for {plataforma}. Photorealistic. "
+                f"No text, no watermarks, no overlays, no logos, no writing of any kind."
             )
             print(f"[prompt:flux] {flux_prompt}")
             try:
