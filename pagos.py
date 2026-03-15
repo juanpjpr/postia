@@ -3,9 +3,9 @@ import os
 
 # fotos=-1 significa ilimitadas
 PLANES = {
-    "basico":    {"titulo": "PostIA - Plan Basico",    "precio": 2999,  "fotos": 30},
-    "pro":       {"titulo": "PostIA - Plan Pro",       "precio": 5999,  "fotos": 100},
-    "ilimitado": {"titulo": "PostIA - Plan Ilimitado", "precio": 9999,  "fotos": -1},
+    "basico":    {"titulo": "PostIA - Plan Basico",    "precio": 15000, "fotos": 30},
+    "pro":       {"titulo": "PostIA - Plan Pro",       "precio": 30000, "fotos": 100},
+    "ilimitado": {"titulo": "PostIA - Plan Ilimitado", "precio": 50000, "fotos": -1},
 }
 
 
