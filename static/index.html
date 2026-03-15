@@ -1498,19 +1498,21 @@
   };
 
   const MESSAGES = [
-    { side: 'user', img: 'img5.jpg', text: 'bife de chorizo con chimichurri' },
-    { side: 'bot',  text: 'Perfecto! Recibi tu foto de *bife de chorizo*.\n\nQue tipo de producto es?\n1 - Comida / Restaurante\n2 - Ropa\n3 - Electronica\n4 - Hogar / Deco\n5 - Belleza\n6 - Otro' },
+    { side: 'user', img: '/static/guitarra_antes.jpg', text: 'guitarra acustica Martin' },
+    { side: 'bot',  text: 'Perfecto! Recibi tu foto de *guitarra acustica Martin*.\n\nQue tipo de producto es?\n1 - Comida\n2 - Ropa\n3 - Electronica\n4 - Hogar\n5 - Belleza\n6 - Otro' },
+    { side: 'user', text: '6' },
+    { side: 'bot',  text: 'Que estilo queres?\n1 - Realista (mejora la foto)\n2 - Modo IA (imagen llamativa)\n3 - Fondo blanco/negro' },
+    { side: 'user', text: '3' },
+    { side: 'bot',  text: 'Que color de fondo queres?\n1 - Blanco (ideal para Mercado Libre)\n2 - Negro (ideal para electronica y premium)' },
     { side: 'user', text: '1' },
-    { side: 'bot',  text: 'Que estilo queres?\n1 - Realista y profesional\n2 - Llamativo y exagerado\n3 - Elegante y premium' },
-    { side: 'user', text: '2' },
     { side: 'bot',  text: 'Donde vas a publicar?\n1 - Instagram\n2 - Mercado Libre\n3 - Facebook\n4 - WhatsApp\n5 - Todos' },
-    { side: 'user', text: '1' },
-    { side: 'bot',  text: 'Generando tu contenido... en unos segundos te llega la imagen lista.' },
-    { side: 'bot',  img: 'img5.jpg', text: '*Instagram*\n\nBife de chorizo jugoso, chimichurri casero. La noche perfecta empieza aca. 🔥\n\n#bife #carneargentina #parrilla #bbq #foodie' },
+    { side: 'user', text: '2' },
+    { side: 'bot',  text: 'Generando tu contenido... en unos segundos te llega.' },
+    { side: 'bot',  img: '/static/guitarra_despues.jpg', text: '*Mercado Libre*\n\nTITULO: Guitarra Acustica Martin Dreadnought Natural\n- Tapa de madera maciza, sonido cálido y proyectado\n- Clavijero metálico de alta precision\n- Ideal para principiantes y nivel intermedio\n- Excelente estado, lista para tocar' },
   ];
 
   // Delays in ms between each step
-  const DELAYS = [300, 1200, 2600, 3400, 4800, 5600, 7000, 7800, 10000];
+  const DELAYS = [300, 1400, 2800, 3800, 5000, 6000, 7000, 8000, 9000, 9800, 13000];
 
   function addTyping() {
     const el = document.createElement('div');
@@ -1559,7 +1561,7 @@
     });
 
     // Restart after full sequence
-    const restart = setTimeout(runChat, 16000);
+    const restart = setTimeout(runChat, 18000);
     waTimers.push(restart);
   }
 
