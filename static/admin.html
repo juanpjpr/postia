@@ -69,7 +69,7 @@
     .section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; }
 
     /* STATS */
-    .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 36px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 36px; }
     @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
     .stat {
       background: var(--surface); border: 1px solid var(--border);
@@ -200,6 +200,7 @@
       <div class="stat"><div class="stat-label">Plan Básico</div><div class="stat-num c-blue" id="s-basico">—</div></div>
       <div class="stat"><div class="stat-label">Plan Pro</div><div class="stat-num c-purple" id="s-pro">—</div></div>
       <div class="stat"><div class="stat-label">Ilimitado</div><div class="stat-num c-green" id="s-ilimitado">—</div></div>
+      <div class="stat" style="border-color:rgba(34,197,94,0.3)"><div class="stat-label">Ganancia est. mes</div><div class="stat-num c-green" id="s-ganancia">—</div></div>
     </div>
 
     <!-- Tabs row -->
@@ -278,12 +279,23 @@ function updateStats() {
   const basico  = usuarios.filter(u => u.plan === 'basico').length
   const pro     = usuarios.filter(u => u.plan === 'pro').length
   const ilim    = usuarios.filter(u => u.plan === 'ilimitado').length
+  const precios = { basico: 15000, pro: 30000, ilimitado: 50000 }
+  const ingresos = usuarios.filter(u => u.estado === 'activo').reduce((acc, u) => acc + (precios[u.plan] || 0), 0)
+  const costoFijo = 20000  // ~$20 USD en ARS
+  const costoVar  = usuarios.filter(u => u.estado === 'activo').reduce((acc, u) => {
+    const usos = u.total_usos || 0
+    return acc + Math.min(usos, u.plan === 'ilimitado' ? 300 : u.plan === 'pro' ? 100 : 30) * 50
+  }, 0)
+  const ganancia = ingresos - costoFijo - costoVar
+  const fmt = n => n >= 1000 ? '$' + (n/1000).toFixed(0) + 'k' : '$' + n
+
   document.getElementById('s-total').textContent = usuarios.length
   document.getElementById('s-activos').textContent = activos
   document.getElementById('s-trial').textContent = trial
   document.getElementById('s-basico').textContent = basico
   document.getElementById('s-pro').textContent = pro
   document.getElementById('s-ilimitado').textContent = ilim
+  document.getElementById('s-ganancia').textContent = fmt(ganancia)
 }
 
 // ── TABS ──
