@@ -47,13 +47,14 @@ ESTILOS = {
 }
 
 # Pregunta especifica por categoria en modo detallado
+# El detalle enriquece tanto el prompt de imagen como el de descripcion
 PREGUNTAS_DETALLE = {
-    "comida":      "Precio o promo del dia? Ej: *Lomo completo $8.500*\n(o escribi *0* para omitir)",
-    "ropa":        "Talle disponible, colores y precio? Ej: *S/M/L, negro y blanco, $25.000*\n(o escribi *0* para omitir)",
-    "electronica": "Marca y modelo exacto? Ej: *Samsung Galaxy A54 128GB negro*\n(Esto mejora mucho el SEO en ML)\n(o escribi *0* para omitir)",
-    "hogar":       "Medidas, materiales y precio? Ej: *Mesa 1.20x0.80m madera maciza, $95.000*\n(o escribi *0* para omitir)",
-    "belleza":     "Ingredientes principales o beneficio clave? Ej: *Con vitamina C, apto piel sensible*\n(o escribi *0* para omitir)",
-    "otro":        "Algun detalle extra que quieras destacar? Ej: precio, garantia, materiales...\n(o escribi *0* para omitir)",
+    "comida":      "Algun ingrediente o detalle especial del plato?\nEj: *con chimichurri casero, coccion a las brasas, sin TACC*\n(o escribi *0* para omitir)",
+    "ropa":        "Talle disponible y colores? Ej: *S/M/L, negro y blanco*\n(o escribi *0* para omitir)",
+    "electronica": "Marca y modelo exacto?\nEj: *Samsung Galaxy A54 128GB negro*\n(Mejora el SEO en ML y la precision de la imagen)\n(o escribi *0* para omitir)",
+    "hogar":       "Medidas y materiales? Ej: *Mesa 1.20x0.80m madera maciza*\n(o escribi *0* para omitir)",
+    "belleza":     "Ingrediente principal o beneficio clave?\nEj: *con vitamina C, apto piel sensible, sin parabenos*\n(o escribi *0* para omitir)",
+    "otro":        "De que rubro es tu producto?\nEj: *juguetes, herramientas, mascotas, deportes, libreria...*",
 }
 
 PLATAFORMAS = {
@@ -368,8 +369,11 @@ async def webhook(
 
     # Paso 2b: respondio la pregunta de detalle (modo detallado)
     if state == "waiting_detalle":
-        if body and body != "0":
-            # Agrega el detalle a la descripcion
+        categoria = session.get("categoria", "otro")
+        if categoria == "otro":
+            # Para "otro", la respuesta ES el rubro — siempre se usa
+            desc_completa = session["descripcion"] + " — rubro: " + body if body else session["descripcion"]
+        elif body and body != "0":
             desc_completa = session["descripcion"] + " — " + body
         else:
             desc_completa = session["descripcion"]
