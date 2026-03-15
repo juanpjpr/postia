@@ -83,6 +83,11 @@
       min-height: 88vh;
       border-bottom: var(--border);
     }
+    .hero.hero-simple {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      padding: 80px 40px 60px;
+    }
     .hero-carousel { min-height: 0; }
     .hero-left {
       padding: 60px 50px;
@@ -90,6 +95,11 @@
       flex-direction: column;
       justify-content: center;
       border-right: var(--border);
+    }
+    .hero-simple .hero-left {
+      border-right: none;
+      padding: 0;
+      max-width: 680px;
     }
     .hero-tag {
       display: inline-flex;
