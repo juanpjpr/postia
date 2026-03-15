@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 # En Railway DATABASE_URL viene automático al agregar el plugin Postgres
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-USOS_GRATIS = 3
+USOS_GRATIS = 999  # TODO: bajar a 3 antes de produccion
 DIAS_SUSCRIPCION = 30
 
 
