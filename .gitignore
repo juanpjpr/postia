@@ -6,5 +6,7 @@ venv/
 *.egg-info/
 dist/
 .DS_Store
-# imagenes generadas en runtime (UUIDs)
 static/*.png
+postia.db
+server.log
+error.log

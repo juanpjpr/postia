@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Form, BackgroundTasks
-from fastapi.responses import PlainTextResponse
+from fastapi import FastAPI, Form, BackgroundTasks, Request
+from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
 from openai import OpenAI
@@ -8,14 +8,21 @@ from dotenv import load_dotenv
 import os
 import base64
 import uuid
+import io
+import httpx
+import fal_client
+import db
+import pagos
 
 load_dotenv()
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+db.init_db()
 
 openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 twilio = TwilioClient(os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN"))
+os.environ["FAL_KEY"] = os.getenv("FAL_KEY", "")
 TWILIO_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8001")
 
@@ -36,6 +43,7 @@ ESTILOS = {
     "1": "realista",
     "2": "llamativo",
     "3": "elegante",
+    "4": "fondo_limpio",
 }
 
 PLATAFORMAS = {
@@ -44,29 +52,6 @@ PLATAFORMAS = {
     "3": ["Facebook"],
     "4": ["WhatsApp"],
     "5": ["Instagram", "Mercado Libre", "Facebook", "WhatsApp"],
-}
-
-# --- Prompts de imagen por categoria + estilo ---
-
-PROMPTS_IMAGEN = {
-    ("comida", "realista"):  "professional food photography, natural lighting, clean plating, restaurant quality, soft shadows, no text overlays",
-    ("comida", "llamativo"):  "steaming hot food, golden crust, dramatic fire background, vibrant colors, street food energy, ultra appetizing, bold text overlay with product name",
-    ("comida", "elegante"):   "fine dining plating, dark marble surface, candlelight bokeh, michelin star presentation, moody editorial, no text overlays",
-    ("ropa", "realista"):    "fashion product photography, neutral background, flat lay or mannequin, clean studio light, no text overlays",
-    ("ropa", "llamativo"):   "vibrant outfit, urban street background, dynamic lifestyle shot, bold colors, eye-catching, bold promotional text overlay",
-    ("ropa", "elegante"):    "luxury fashion editorial, minimalist background, soft studio lighting, high-end look, no text overlays",
-    ("electronica", "realista"):  "product photography, white background, sharp focus, tech gadget, studio light, no text overlays",
-    ("electronica", "llamativo"): "futuristic neon background, glowing product, dynamic angles, cyberpunk vibe, bold price or promo text overlay",
-    ("electronica", "elegante"):  "premium tech product, dark background, dramatic spotlight, sleek and minimal, no text overlays",
-    ("hogar", "realista"):   "home decor photography, natural light, cozy interior setting, lifestyle staging, no text overlays",
-    ("hogar", "llamativo"):  "bright colorful room, bold decor, eye-catching composition, vibrant interior, promotional text overlay",
-    ("hogar", "elegante"):   "luxury interior design, muted tones, editorial styling, sophisticated atmosphere, no text overlays",
-    ("belleza", "realista"): "beauty product photography, clean white background, soft light, cosmetics styling, no text overlays",
-    ("belleza", "llamativo"): "bold beauty product shot, glitter and color splashes, vibrant makeup vibes, bold promo text overlay",
-    ("belleza", "elegante"): "luxury beauty editorial, marble surface, gold accents, premium cosmetics aesthetic, no text overlays",
-    ("otro", "realista"):    "clean product photography, neutral background, sharp focus, natural light, no text overlays",
-    ("otro", "llamativo"):   "bold product shot, vibrant colors, dynamic composition, eye-catching background, bold text overlay",
-    ("otro", "elegante"):    "premium product photography, dark moody background, dramatic spotlight, no text overlays",
 }
 
 # --- Prompts de texto por plataforma + estilo ---
@@ -87,13 +72,11 @@ PROMPTS_TEXTO = {
     ("WhatsApp", "realista"):  "Escribi un mensaje corto y natural para estado/grupo de WhatsApp de: {desc}. Que no parezca generado por IA. Maximo 2 lineas, precio si aplica, 1-2 emojis. Como si lo escribiera el dueno del negocio.",
     ("WhatsApp", "llamativo"): "Escribi un mensaje MUY LLAMATIVO para estado de WhatsApp de: {desc}. Primera linea en MAYUSCULAS, precio visible, 3 emojis impactantes, maximo 3 lineas.",
     ("WhatsApp", "elegante"):  "Escribi un mensaje elegante y breve para estado de WhatsApp de: {desc}. Tono premium y natural, precio si aplica, 1 emoji, maximo 2 lineas. Que no parezca IA.",
-}
 
-PROMPTS_IMAGEN_PLATAFORMA = {
-    "Instagram":     "square 1:1 format optimized for Instagram feed",
-    "Mercado Libre": "white background, product centered, e-commerce listing format",
-    "Facebook":      "horizontal 16:9 format optimized for Facebook feed",
-    "WhatsApp":      "square format, bold text overlay space, high contrast, designed for WhatsApp status",
+    ("Instagram", "fondo_limpio"):  "Escribi una descripcion limpia y profesional para Instagram de: {desc}. Resalta el producto sobre fondo blanco. Maximo 3 lineas, 2 emojis y 5 hashtags argentinos.",
+    ("Mercado Libre", "fondo_limpio"): "Escribi titulo SEO (max 60 chars) y 4 bullet points destacando caracteristicas del producto de: {desc}. Menciona que es foto con fondo blanco profesional. Formato:\nTITULO: ...\n- punto 1\n- punto 2\n- punto 3\n- punto 4",
+    ("Facebook", "fondo_limpio"):  "Escribi una descripcion para Facebook de: {desc}. Tono claro y directo, 3 lineas, precio si aplica, 1-2 emojis.",
+    ("WhatsApp", "fondo_limpio"):  "Escribi un mensaje corto para estado de WhatsApp de: {desc}. Menciona que es foto profesional. Maximo 2 lineas, precio si aplica, 1-2 emojis.",
 }
 
 
@@ -112,12 +95,126 @@ def enviar_mensaje(to: str, texto: str, media_url: str = None):
     twilio.messages.create(**kwargs)
 
 
-def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str) -> str:
-    estilo_base = PROMPTS_IMAGEN.get((categoria, estilo), PROMPTS_IMAGEN[("otro", "realista")])
-    formato = PROMPTS_IMAGEN_PLATAFORMA.get(plataforma, "")
-    size = "1536x1024" if plataforma == "Facebook" else "1024x1024"
-    prompt = f"{descripcion}, {estilo_base}, {formato}"
+def generar_prompt_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str) -> str:
+    estilos_desc = {
+        "realista": "fotografía realista y profesional, sin textos ni overlays",
+        "llamativo": "imagen llamativa, colores vibrantes, energía y dinamismo, puede incluir texto con el nombre del producto",
+        "elegante": "fotografía premium y elegante, minimalista, sin textos",
+    }
+    formato_desc = {
+        "Instagram": "formato cuadrado 1:1, optimizado para feed de Instagram",
+        "Mercado Libre": "fondo blanco, producto centrado, formato e-commerce",
+        "Facebook": "formato horizontal 16:9 para Facebook",
+        "WhatsApp": "formato cuadrado, alto contraste, para estado de WhatsApp",
+    }
+    meta_prompt = (
+        f"Eres un experto en fotografía de productos y marketing visual para redes sociales. "
+        f"Dame SOLO el prompt en inglés para generar con IA la mejor imagen posible para vender '{descripcion}' "
+        f"(categoria: {categoria}) en {plataforma}. "
+        f"Estilo deseado: {estilos_desc.get(estilo, estilo)}. "
+        f"Formato: {formato_desc.get(plataforma, '')}. "
+        f"El prompt debe especificar iluminación, fondo, composición, ángulo, ambiente y detalles visuales del producto. "
+        f"Maximo 120 palabras. Responde SOLO con el prompt, sin explicaciones ni comillas."
+    )
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": meta_prompt}],
+        max_tokens=200,
+    )
+    return response.choices[0].message.content.strip()
 
+
+def _descargar_media_twilio(foto_url: str) -> bytes | None:
+    """Descarga imagen de Twilio. Intenta 3 metodos. Retorna bytes o None si falla."""
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+
+    # Intento 1: auth sin seguir redirect — captura la Location del CDN
+    try:
+        r = httpx.get(foto_url, auth=(account_sid, auth_token), follow_redirects=False, timeout=15)
+        print(f"[twilio] intento 1: status={r.status_code} ct={r.headers.get('content-type','')}")
+        if r.status_code in (301, 302, 303, 307, 308):
+            cdn_url = r.headers.get("location", "")
+            print(f"[twilio] CDN redirect: {cdn_url}")
+            if cdn_url:
+                r2 = httpx.get(cdn_url, follow_redirects=True, timeout=30)
+                ct = r2.headers.get("content-type", "").split(";")[0].strip()
+                if ct.startswith("image/"):
+                    print(f"[twilio] OK {len(r2.content)} bytes")
+                    return r2.content
+        if r.status_code == 200:
+            ct = r.headers.get("content-type", "").split(";")[0].strip()
+            if ct.startswith("image/"):
+                return r.content
+    except Exception as e:
+        print(f"[twilio] intento 1 error: {e}")
+
+    # Intento 2: auth + follow_redirects (httpx sigue el redirect completo)
+    try:
+        r = httpx.get(foto_url, auth=(account_sid, auth_token), follow_redirects=True, timeout=30)
+        ct = r.headers.get("content-type", "").split(";")[0].strip()
+        print(f"[twilio] intento 2: status={r.status_code} ct={ct} size={len(r.content)}")
+        if ct.startswith("image/"):
+            return r.content
+    except Exception as e:
+        print(f"[twilio] intento 2 error: {e}")
+
+    # Intento 3: usar requests (ya instalado como dep de twilio, manejo distinto de redirects)
+    try:
+        import requests as _req
+        r = _req.get(foto_url, auth=(account_sid, auth_token), allow_redirects=True, timeout=30)
+        ct = r.headers.get("content-type", "").split(";")[0].strip()
+        print(f"[twilio] intento 3 (requests): status={r.status_code} ct={ct} size={len(r.content)}")
+        if ct.startswith("image/"):
+            return r.content
+    except Exception as e:
+        print(f"[twilio] intento 3 error: {e}")
+
+    print("[twilio] todos los intentos fallaron — sandbox limitation, usando generacion GPT")
+    return None
+
+
+def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str, foto_url: str = None) -> str:
+    size = "1536x1024" if plataforma == "Facebook" else "1024x1024"
+
+    if estilo in ("realista", "fondo_limpio") and foto_url:
+        img_bytes = _descargar_media_twilio(foto_url)
+        if img_bytes:
+            fal_image_url = fal_client.upload(img_bytes, "image/jpeg")
+            print(f"[fal] imagen subida: {fal_image_url}")
+            if estilo == "fondo_limpio":
+                flux_prompt = (
+                    f"Remove the background completely and replace it with a clean solid white background. "
+                    f"Improve the studio lighting and sharpness of the product. "
+                    f"The product must remain 100% identical: same color, material, texture, shape and all details. "
+                    f"Do not add, replace or remove any part of the product itself. "
+                    f"Result: professional e-commerce photo with pure white background, optimized for {plataforma}."
+                )
+            else:
+                flux_prompt = (
+                    f"Professional e-commerce product photo. "
+                    f"Improve ONLY the studio lighting, brightness, contrast and sharpness. "
+                    f"The product must remain 100% identical: same color, material, texture, shape and all details. "
+                    f"Do not replace, add or remove any object. Clean neutral background. "
+                    f"Optimized for {plataforma}. Photorealistic."
+                )
+            result = fal_client.run(
+                "fal-ai/flux-pro/kontext",
+                arguments={
+                    "prompt": flux_prompt,
+                    "image_url": fal_image_url,
+                    "guidance_scale": 3.0 if estilo == "fondo_limpio" else 2.5,
+                    "num_inference_steps": 28,
+                },
+            )
+            img_data = httpx.get(result["images"][0]["url"], timeout=60).content
+            filename = f"{uuid.uuid4().hex}.png"
+            with open(os.path.join("static", filename), "wb") as f:
+                f.write(img_data)
+            return f"{BASE_URL}/static/{filename}"
+        # Si no se pudo descargar, cae al modo generativo
+
+    prompt = generar_prompt_imagen(descripcion, categoria, estilo, plataforma)
     response = openai.images.generate(
         model="gpt-image-1",
         prompt=prompt,
@@ -143,10 +240,10 @@ def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
     return response.choices[0].message.content.strip()
 
 
-def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list):
+def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list, foto_url: str = None):
     try:
         primera = plataformas[0]
-        imagen_url = generar_imagen(descripcion, categoria, estilo, primera)
+        imagen_url = generar_imagen(descripcion, categoria, estilo, primera, foto_url)
         texto = generar_descripcion(descripcion, estilo, primera)
         respuesta = f"*{primera}*\n\n{texto}"
 
@@ -157,7 +254,11 @@ def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: st
         enviar_mensaje(to, respuesta, media_url=imagen_url)
 
     except Exception as e:
-        print(f"Error: {e}")
+        import traceback
+        tb = traceback.format_exc()
+        print(f"Error: {e}\n{tb}")
+        with open("error.log", "a") as f:
+            f.write(f"Error: {e}\n{tb}\n---\n")
         enviar_mensaje(to, "Ocurrio un error. Intenta de nuevo.")
 
 
@@ -190,6 +291,7 @@ async def webhook(
             session["categoria"],
             session["estilo"],
             plataformas,
+            session.get("foto_url"),
         )
         return twiml("Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.")
 
@@ -212,7 +314,8 @@ async def webhook(
             "Que estilo queres?\n"
             "1 - Realista y profesional\n"
             "2 - Llamativo y exagerado\n"
-            "3 - Elegante y premium"
+            "3 - Elegante y premium\n"
+            "4 - Limpiar fondo (fondo blanco profesional)"
         )
 
     # Primer contacto: cualquier mensaje de un usuario nuevo sin sesion
@@ -232,13 +335,33 @@ async def webhook(
 
     # Inicio: foto + descripcion
     if int(NumMedia or 0) > 0 and MediaUrl0 and body:
+        acceso = db.verificar_acceso(From)
+        if not acceso["permitido"]:
+            links = pagos.crear_links_todos_los_planes(From)
+            msg = acceso["mensaje"] + "\n\nEleги tu plan:"
+            if "basico" in links:
+                msg += f"\n\n🔹 *Plan Basico* — 30 fotos/mes — $2.999\n{links['basico']}"
+            if "pro" in links:
+                msg += f"\n\n🔸 *Plan Pro* — 100 fotos/mes — $5.999\n{links['pro']}"
+            if "ilimitado" in links:
+                msg += f"\n\n⭐ *Plan Ilimitado* — sin limite — $9.999\n{links['ilimitado']}"
+            return twiml(msg)
+
         sessions[From] = {
             "state": "waiting_categoria",
             "descripcion": body,
             "foto_url": MediaUrl0,
         }
+        aviso = ""
+        if acceso["estado"] == "trial":
+            restantes = acceso["usos_restantes"]
+            if restantes == 0:
+                aviso = "\n\n_(Es tu ultima publicacion gratis. Despues necesitas suscripcion.)_"
+            else:
+                aviso = f"\n\n_(Te quedan {restantes} publicaciones gratis)_"
+
         return twiml(
-            f"Perfecto! Recibi tu foto de *{body}*.\n\n"
+            f"Perfecto! Recibi tu foto de *{body}*.{aviso}\n\n"
             "Que tipo de producto es?\n"
             "1 - Comida / Restaurante\n"
             "2 - Ropa / Indumentaria\n"
@@ -259,6 +382,62 @@ async def webhook(
     )
 
 
+@app.post("/pagos/mp")
+async def webhook_mp(request: Request):
+    """Webhook que llama MercadoPago cuando se confirma un pago."""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    print(f"[mp webhook] {data}")
+
+    # MP manda notificaciones de tipo 'payment'
+    if data.get("type") != "payment":
+        return JSONResponse({"ok": True})
+
+    payment_id = str(data.get("data", {}).get("id", ""))
+    if not payment_id:
+        return JSONResponse({"ok": True})
+
+    pago = pagos.verificar_pago(payment_id)
+    if not pago:
+        return JSONResponse({"ok": False, "error": "payment not found"}, status_code=400)
+
+    print(f"[mp] pago {payment_id} status={pago.get('status')} ref={pago.get('external_reference')}")
+
+    if pago.get("status") == "approved":
+        ref = pago.get("external_reference", "")
+        # external_reference tiene formato "phone|plan"
+        if "|" in ref:
+            phone, plan = ref.split("|", 1)
+        else:
+            phone, plan = ref, "basico"
+        if phone:
+            from pagos import PLANES
+            db.activar_suscripcion(phone, payment_id, plan)
+            info = PLANES.get(plan, {})
+            fotos_txt = "ilimitadas" if info.get("fotos") == -1 else f"{info.get('fotos', 30)} fotos"
+            enviar_mensaje(
+                phone,
+                f"Suscripcion *{plan.capitalize()}* activada! Tenes {fotos_txt} por 30 dias. Manda una foto para empezar.",
+            )
+            print(f"[mp] suscripcion {plan} activada para {phone}")
+
+    return JSONResponse({"ok": True})
+
+
+@app.get("/pago-exitoso")
+def pago_exitoso():
+    return {"mensaje": "Pago recibido! Volve a WhatsApp, tu suscripcion ya esta activa."}
+
+
+@app.get("/pago-fallido")
+def pago_fallido():
+    return {"mensaje": "El pago no se proceso. Intenta de nuevo."}
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=False)
+    port = int(os.getenv("PORT", 8001))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
