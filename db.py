@@ -186,6 +186,28 @@ def reembolsar_uso(phone: str):
         conn.commit()
 
 
+def get_usuarios() -> list:
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT phone, estado, plan, usos_gratis, fotos_restantes, total_usos, fecha_inicio, fecha_expiracion FROM suscripciones ORDER BY fecha_inicio DESC NULLS LAST")
+        rows = cur.fetchall()
+        return [_row_to_dict(cur, r) for r in rows]
+    finally:
+        conn.close()
+
+
+def cambiar_plan(phone: str, plan: str, fotos: int):
+    ph = _placeholder()
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"UPDATE suscripciones SET plan={ph}, fotos_restantes={ph}, estado='activo' WHERE phone={ph}", (plan, fotos, phone))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def guardar_consulta(phone: str, tipo: str, mensaje: str):
     ph = _placeholder()
     conn = _get_conn()

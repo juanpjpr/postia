@@ -8,129 +8,155 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --surface2: #242424;
-      --border: #2e2e2e;
-      --text: #f0f0f0;
-      --muted: #888;
-      --accent: #e1306c;
-      --accent2: #833ab4;
-      --green: #22c55e;
-      --yellow: #eab308;
-      --red: #ef4444;
+      --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --surface3: #2e2e2e;
+      --border: #2e2e2e; --text: #f0f0f0; --muted: #777;
+      --accent: #e1306c; --accent2: #833ab4;
+      --green: #22c55e; --yellow: #eab308; --red: #ef4444; --blue: #3b82f6;
       --ig: linear-gradient(135deg, #833ab4, #e1306c, #fcaf45);
     }
     body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
 
-    /* ── LOGIN ── */
-    #login-screen {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh;
-    }
+    /* LOGIN */
+    #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
     .login-box {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 20px; padding: 48px 40px; width: 360px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     }
-    .login-logo { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
-    .login-logo span { background: var(--ig); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .logo { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .logo span { background: var(--ig); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .login-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 36px; }
     .field { margin-bottom: 16px; }
-    .field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
     .field input {
       width: 100%; padding: 12px 14px; background: var(--surface2);
       border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text); font-family: inherit; font-size: 0.95rem;
-      outline: none; transition: border 0.2s;
+      color: var(--text); font-family: inherit; font-size: 0.95rem; outline: none; transition: border 0.2s;
     }
-    .field input:focus { border-color: var(--accent); }
+    .field input:focus { border-color: var(--accent2); }
     .login-btn {
-      width: 100%; padding: 13px; margin-top: 8px;
-      background: var(--ig); border: none; border-radius: 10px;
-      color: white; font-family: inherit; font-size: 1rem; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s;
+      width: 100%; padding: 13px; margin-top: 8px; background: var(--ig);
+      border: none; border-radius: 10px; color: white; font-family: inherit;
+      font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
     }
-    .login-btn:hover { opacity: 0.9; }
-    .login-error { color: var(--red); font-size: 0.85rem; margin-top: 12px; display: none; }
+    .login-btn:hover { opacity: 0.88; }
+    .login-error { color: var(--red); font-size: 0.85rem; margin-top: 12px; display: none; text-align: center; }
 
-    /* ── DASHBOARD ── */
+    /* DASHBOARD */
     #dashboard { display: none; }
-
     nav {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 32px; border-bottom: 1px solid var(--border);
-      background: var(--surface); position: sticky; top: 0; z-index: 10;
+      padding: 14px 32px; border-bottom: 1px solid var(--border);
+      background: rgba(26,26,26,0.95); backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
     }
-    .nav-logo { font-size: 18px; font-weight: 700; }
+    .nav-logo { font-size: 17px; font-weight: 700; }
     .nav-logo span { background: var(--ig); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-tag { color: var(--muted); font-size: 0.78rem; font-weight: 400; margin-left: 6px; }
     .nav-right { display: flex; align-items: center; gap: 16px; }
-    .logout-btn {
-      padding: 7px 16px; border: 1px solid var(--border); border-radius: 8px;
-      background: none; color: var(--muted); font-family: inherit; font-size: 0.85rem;
-      cursor: pointer; transition: all 0.2s;
+    #last-update { color: var(--muted); font-size: 0.8rem; }
+    .btn-ghost {
+      padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: none; color: var(--muted); font-family: inherit; font-size: 0.82rem;
+      cursor: pointer; transition: all 0.15s;
     }
-    .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 
-    main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
 
-    /* ── STATS ── */
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-    .stat-card {
+    /* SECTION TITLE */
+    .section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 36px; }
+    @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+    .stat {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 20px 24px;
+      border-radius: 14px; padding: 18px 20px;
     }
-    .stat-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .stat-value { font-size: 2rem; font-weight: 700; }
-    .stat-value.green { color: var(--green); }
-    .stat-value.yellow { color: var(--yellow); }
-    .stat-value.red { color: var(--red); }
-    .stat-value.purple { background: var(--ig); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .stat-num { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+    .c-ig { background: var(--ig); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .c-green { color: var(--green); }
+    .c-yellow { color: var(--yellow); }
+    .c-red { color: var(--red); }
+    .c-blue { color: var(--blue); }
+    .c-purple { color: #c084fc; }
 
-    /* ── TABS ── */
-    .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; width: fit-content; }
-    .tab {
-      padding: 8px 20px; border-radius: 9px; border: none;
-      background: none; color: var(--muted); font-family: inherit; font-size: 0.9rem;
-      cursor: pointer; transition: all 0.2s; font-weight: 500;
-    }
+    /* TABS */
+    .tabs-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .tabs { display: flex; gap: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: 11px; padding: 4px; }
+    .tab { padding: 7px 18px; border-radius: 8px; border: none; background: none; color: var(--muted); font-family: inherit; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; font-weight: 500; }
     .tab.active { background: var(--surface2); color: var(--text); }
 
-    /* ── TABLE ── */
-    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-    .table-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }
-    .table-title { font-weight: 700; }
-    .refresh-btn {
-      padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px;
-      background: none; color: var(--muted); font-family: inherit; font-size: 0.8rem;
-      cursor: pointer; transition: all 0.2s;
+    /* SEARCH */
+    .search-wrap { position: relative; }
+    .search-wrap input {
+      padding: 9px 14px 9px 36px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.88rem;
+      outline: none; width: 240px; transition: border 0.2s;
     }
-    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .search-wrap input:focus { border-color: var(--accent2); }
+    .search-wrap::before { content: '🔍'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; }
+
+    /* TABLE CARD */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--border); }
+    .card-title { font-weight: 700; font-size: 0.95rem; }
 
     table { width: 100%; border-collapse: collapse; }
-    th { padding: 12px 20px; text-align: left; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
-    td { padding: 14px 20px; font-size: 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { padding: 11px 20px; text-align: left; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 13px 20px; font-size: 0.88rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: var(--surface2); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
 
-    .badge {
-      display: inline-block; padding: 3px 10px; border-radius: 20px;
-      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
-    }
-    .badge-feedback { background: rgba(131,58,180,0.15); color: #c084fc; }
-    .badge-consulta { background: rgba(225,48,108,0.15); color: #fb7185; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .b-trial    { background: rgba(119,119,119,0.15); color: #aaa; }
+    .b-basico   { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .b-pro      { background: rgba(192,132,252,0.15); color: #c084fc; }
+    .b-ilimitado{ background: rgba(34,197,94,0.15); color: #4ade80; }
+    .b-vencido  { background: rgba(239,68,68,0.12); color: #f87171; }
+    .b-activo   { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .b-feedback { background: rgba(131,58,180,0.15); color: #c084fc; }
+    .b-consulta { background: rgba(225,48,108,0.15); color: #fb7185; }
 
-    .cal-muy-buena { color: var(--green); font-weight: 600; }
+    .muted-sm { color: var(--muted); font-size: 0.8rem; }
+    .msg-cell { max-width: 380px; line-height: 1.5; }
+    .cal-muybuena { color: var(--green); font-weight: 600; }
     .cal-buena { color: var(--yellow); font-weight: 600; }
     .cal-mala { color: var(--red); font-weight: 600; }
 
-    .phone-text { color: var(--muted); font-size: 0.82rem; }
-    .date-text { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
-    .msg-text { max-width: 400px; line-height: 1.5; }
+    /* USAGE BAR */
+    .usage-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .usage-bar { height: 6px; border-radius: 3px; background: var(--surface3); width: 80px; overflow: hidden; }
+    .usage-bar-fill { height: 100%; border-radius: 3px; background: var(--ig); }
+    .usage-num { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
 
-    .empty { padding: 48px 24px; text-align: center; color: var(--muted); }
+    /* PLAN SELECTOR */
+    .plan-select {
+      padding: 5px 10px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.82rem;
+      cursor: pointer; outline: none; transition: border 0.15s;
+    }
+    .plan-select:focus { border-color: var(--accent2); }
+    .save-btn {
+      padding: 5px 12px; background: var(--ig); border: none; border-radius: 8px;
+      color: white; font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
+    }
+    .save-btn:hover { opacity: 0.85; }
+    .save-btn:disabled { opacity: 0.4; cursor: default; }
 
-    .loading { padding: 48px 24px; text-align: center; color: var(--muted); }
+    .empty { padding: 56px 24px; text-align: center; color: var(--muted); font-size: 0.9rem; }
+    .loading { padding: 56px 24px; text-align: center; color: var(--muted); }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 32px; width: 400px; }
+    .modal h3 { margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
   </style>
 </head>
 <body>
@@ -138,7 +164,7 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">Post<span>IA</span></div>
+    <div class="logo">Post<span>IA</span></div>
     <div class="login-sub">Panel de administración</div>
     <div class="field">
       <label>Usuario</label>
@@ -156,45 +182,43 @@
 <!-- DASHBOARD -->
 <div id="dashboard">
   <nav>
-    <div class="nav-logo">Post<span>IA</span> <span style="color:var(--muted);font-size:0.8rem;font-weight:400">admin</span></div>
+    <div class="nav-logo">Post<span>IA</span><span class="nav-tag">admin</span></div>
     <div class="nav-right">
-      <span style="color:var(--muted);font-size:0.85rem" id="last-update"></span>
-      <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+      <span id="last-update"></span>
+      <button class="btn-ghost" onclick="loadAll()">↻ Actualizar</button>
+      <button class="btn-ghost" onclick="doLogout()">Salir</button>
     </div>
   </nav>
 
   <main>
     <!-- Stats -->
+    <div class="section-title">Resumen</div>
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total consultas</div>
-        <div class="stat-value purple" id="stat-total">—</div>
+      <div class="stat"><div class="stat-label">Clientes totales</div><div class="stat-num c-ig" id="s-total">—</div></div>
+      <div class="stat"><div class="stat-label">Activos</div><div class="stat-num c-green" id="s-activos">—</div></div>
+      <div class="stat"><div class="stat-label">Trial</div><div class="stat-num c-yellow" id="s-trial">—</div></div>
+      <div class="stat"><div class="stat-label">Plan Básico</div><div class="stat-num c-blue" id="s-basico">—</div></div>
+      <div class="stat"><div class="stat-label">Plan Pro</div><div class="stat-num c-purple" id="s-pro">—</div></div>
+      <div class="stat"><div class="stat-label">Ilimitado</div><div class="stat-num c-green" id="s-ilimitado">—</div></div>
+    </div>
+
+    <!-- Tabs row -->
+    <div class="tabs-row">
+      <div class="tabs">
+        <button class="tab active" onclick="setTab('clientes', this)">Clientes</button>
+        <button class="tab" onclick="setTab('consultas', this)">Consultas</button>
+        <button class="tab" onclick="setTab('feedback', this)">Feedback</button>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Feedbacks</div>
-        <div class="stat-value purple" id="stat-feedback">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Muy buena</div>
-        <div class="stat-value green" id="stat-muybuena">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Mala / Buena</div>
-        <div class="stat-value yellow" id="stat-negativa">—</div>
+      <div class="search-wrap">
+        <input type="text" id="search-input" placeholder="Buscar por teléfono..." oninput="renderCurrent()">
       </div>
     </div>
 
-    <!-- Tabs + table -->
-    <div class="tabs">
-      <button class="tab active" onclick="setTab('todos')">Todos</button>
-      <button class="tab" onclick="setTab('consulta')">Consultas</button>
-      <button class="tab" onclick="setTab('feedback')">Feedback</button>
-    </div>
-
-    <div class="table-wrap">
-      <div class="table-header">
-        <div class="table-title" id="table-title">Todos los registros</div>
-        <button class="refresh-btn" onclick="loadData()">↻ Actualizar</button>
+    <!-- Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="card-title">Clientes</div>
+        <span class="muted-sm" id="card-count"></span>
       </div>
       <div id="table-container"><div class="loading">Cargando...</div></div>
     </div>
@@ -202,117 +226,204 @@
 </div>
 
 <script>
-  const SECRET = 'postia2026'
-  let allData = []
-  let currentTab = 'todos'
+const SECRET = 'postia2026'
+let usuarios = []
+let consultas = []
+let currentTab = 'clientes'
 
-  function doLogin() {
-    const user = document.getElementById('user-input').value.trim()
-    const pass = document.getElementById('pass-input').value.trim()
-    if (user === 'postia' && pass === 'postia') {
-      sessionStorage.setItem('admin_auth', '1')
-      document.getElementById('login-screen').style.display = 'none'
-      document.getElementById('dashboard').style.display = 'block'
-      loadData()
-    } else {
-      document.getElementById('login-error').style.display = 'block'
-    }
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin()
-  })
-
-  function doLogout() {
-    sessionStorage.removeItem('admin_auth')
-    document.getElementById('login-screen').style.display = 'flex'
-    document.getElementById('dashboard').style.display = 'none'
-  }
-
-  async function loadData() {
-    try {
-      const res = await fetch(`/admin/consultas?secret=${SECRET}`)
-      const data = await res.json()
-      allData = data.consultas || []
-      updateStats()
-      renderTable()
-      document.getElementById('last-update').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-AR')
-    } catch(e) {
-      document.getElementById('table-container').innerHTML = '<div class="empty">Error al cargar datos</div>'
-    }
-  }
-
-  function updateStats() {
-    const feedbacks = allData.filter(r => r.tipo === 'feedback')
-    const muyBuenas = feedbacks.filter(r => r.mensaje && r.mensaje.includes('muy buena'))
-    const negativas = feedbacks.filter(r => r.mensaje && (r.mensaje.includes('mala') || (r.mensaje.includes('buena') && !r.mensaje.includes('muy buena'))))
-
-    document.getElementById('stat-total').textContent = allData.length
-    document.getElementById('stat-feedback').textContent = feedbacks.length
-    document.getElementById('stat-muybuena').textContent = muyBuenas.length
-    document.getElementById('stat-negativa').textContent = negativas.length
-  }
-
-  function setTab(tab) {
-    currentTab = tab
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-    event.target.classList.add('active')
-    const titles = { todos: 'Todos los registros', consulta: 'Consultas y reclamos', feedback: 'Feedback de usuarios' }
-    document.getElementById('table-title').textContent = titles[tab]
-    renderTable()
-  }
-
-  function renderTable() {
-    const filtered = currentTab === 'todos' ? allData : allData.filter(r => r.tipo === currentTab)
-
-    if (filtered.length === 0) {
-      document.getElementById('table-container').innerHTML = '<div class="empty">No hay registros aún</div>'
-      return
-    }
-
-    const rows = filtered.map(r => {
-      const fecha = r.fecha ? r.fecha.replace('T', ' ').substring(0, 16) : '—'
-      const phone = r.phone ? r.phone.replace('whatsapp:', '') : '—'
-      const badgeClass = r.tipo === 'feedback' ? 'badge-feedback' : 'badge-consulta'
-      const msg = formatMensaje(r.mensaje || '—')
-      return `
-        <tr>
-          <td><span class="badge ${badgeClass}">${r.tipo}</span></td>
-          <td class="phone-text">${phone}</td>
-          <td class="msg-text">${msg}</td>
-          <td class="date-text">${fecha}</td>
-        </tr>
-      `
-    }).join('')
-
-    document.getElementById('table-container').innerHTML = `
-      <table>
-        <thead>
-          <tr>
-            <th>Tipo</th>
-            <th>Número</th>
-            <th>Mensaje</th>
-            <th>Fecha</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    `
-  }
-
-  function formatMensaje(msg) {
-    if (msg.includes('muy buena')) return msg.replace('muy buena', '<span class="cal-muy-buena">muy buena</span>')
-    if (msg.includes('Calificacion: buena')) return msg.replace('buena', '<span class="cal-buena">buena</span>')
-    if (msg.includes('mala')) return msg.replace('mala', '<span class="cal-mala">mala</span>')
-    return msg
-  }
-
-  // Auto-check session on load
-  if (sessionStorage.getItem('admin_auth') === '1') {
+// ── AUTH ──
+function doLogin() {
+  const u = document.getElementById('user-input').value.trim()
+  const p = document.getElementById('pass-input').value.trim()
+  if (u === 'postia' && p === 'postia') {
+    sessionStorage.setItem('admin_auth', '1')
     document.getElementById('login-screen').style.display = 'none'
     document.getElementById('dashboard').style.display = 'block'
-    loadData()
+    loadAll()
+  } else {
+    document.getElementById('login-error').style.display = 'block'
   }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin() })
+function doLogout() {
+  sessionStorage.removeItem('admin_auth')
+  location.reload()
+}
+
+// ── LOAD ──
+async function loadAll() {
+  await Promise.all([loadUsuarios(), loadConsultas()])
+  document.getElementById('last-update').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-AR')
+}
+
+async function loadUsuarios() {
+  const res = await fetch(`/admin/usuarios?secret=${SECRET}`)
+  const data = await res.json()
+  usuarios = data.usuarios || []
+  updateStats()
+  if (currentTab === 'clientes') renderCurrent()
+}
+
+async function loadConsultas() {
+  const res = await fetch(`/admin/consultas?secret=${SECRET}`)
+  const data = await res.json()
+  consultas = data.consultas || []
+  if (currentTab !== 'clientes') renderCurrent()
+}
+
+// ── STATS ──
+function updateStats() {
+  const activos = usuarios.filter(u => u.estado === 'activo').length
+  const trial   = usuarios.filter(u => u.estado === 'trial').length
+  const basico  = usuarios.filter(u => u.plan === 'basico').length
+  const pro     = usuarios.filter(u => u.plan === 'pro').length
+  const ilim    = usuarios.filter(u => u.plan === 'ilimitado').length
+  document.getElementById('s-total').textContent = usuarios.length
+  document.getElementById('s-activos').textContent = activos
+  document.getElementById('s-trial').textContent = trial
+  document.getElementById('s-basico').textContent = basico
+  document.getElementById('s-pro').textContent = pro
+  document.getElementById('s-ilimitado').textContent = ilim
+}
+
+// ── TABS ──
+function setTab(tab, el) {
+  currentTab = tab
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  el.classList.add('active')
+  document.getElementById('search-input').value = ''
+  renderCurrent()
+}
+
+function renderCurrent() {
+  if (currentTab === 'clientes') renderClientes()
+  else renderConsultas(currentTab)
+}
+
+// ── CLIENTES ──
+function renderClientes() {
+  const q = document.getElementById('search-input').value.toLowerCase()
+  const data = usuarios.filter(u => !q || (u.phone||'').toLowerCase().includes(q))
+  document.getElementById('card-title').textContent = 'Clientes'
+  document.getElementById('card-count').textContent = data.length + ' usuarios'
+
+  if (!data.length) { document.getElementById('table-container').innerHTML = '<div class="empty">No hay clientes aún</div>'; return }
+
+  const rows = data.map(u => {
+    const phone = (u.phone||'').replace('whatsapp:','')
+    const planBadge = `<span class="badge b-${u.plan||'trial'}">${u.plan||'trial'}</span>`
+    const estadoBadge = `<span class="badge b-${u.estado||'trial'}">${u.estado||'—'}</span>`
+    const usos = u.total_usos || 0
+    const fotos = u.fotos_restantes === -1 ? '∞' : (u.fotos_restantes ?? '—')
+    const expira = u.fecha_expiracion ? u.fecha_expiracion.substring(0,10) : '—'
+
+    const planesOpts = ['trial','basico','pro','ilimitado'].map(p =>
+      `<option value="${p}" ${u.plan===p?'selected':''}>${p}</option>`
+    ).join('')
+
+    return `<tr>
+      <td><span class="muted-sm">${phone}</span></td>
+      <td>${estadoBadge}</td>
+      <td>${planBadge}</td>
+      <td>
+        <div class="usage-bar-wrap">
+          <div class="usage-bar"><div class="usage-bar-fill" style="width:${Math.min(usos*3,100)}%"></div></div>
+          <span class="usage-num">${usos} usos</span>
+        </div>
+      </td>
+      <td class="muted-sm">${fotos} restantes</td>
+      <td class="muted-sm">${expira}</td>
+      <td>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select class="plan-select" id="sel-${encodePhone(phone)}" onchange="markDirty('${encodePhone(phone)}')">${planesOpts}</select>
+          <button class="save-btn" id="btn-${encodePhone(phone)}" onclick="guardarPlan('${u.phone}','${encodePhone(phone)}')" disabled>Guardar</button>
+        </div>
+      </td>
+    </tr>`
+  }).join('')
+
+  document.getElementById('table-container').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Teléfono</th><th>Estado</th><th>Plan</th><th>Actividad</th><th>Fotos</th><th>Expira</th><th>Cambiar plan</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`
+}
+
+function encodePhone(phone) {
+  return phone.replace(/[^a-z0-9]/gi, '_')
+}
+
+function markDirty(id) {
+  const btn = document.getElementById('btn-' + id)
+  if (btn) btn.disabled = false
+}
+
+async function guardarPlan(fullPhone, id) {
+  const sel = document.getElementById('sel-' + id)
+  const btn = document.getElementById('btn-' + id)
+  const plan = sel.value
+  btn.textContent = '...'
+  btn.disabled = true
+  const res = await fetch(`/admin/cambiar-plan?secret=${SECRET}`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({phone: fullPhone, plan})
+  })
+  const data = await res.json()
+  if (data.ok) {
+    btn.textContent = '✓'
+    setTimeout(() => { btn.textContent = 'Guardar'; loadUsuarios() }, 1000)
+  } else {
+    btn.textContent = 'Error'
+    btn.disabled = false
+  }
+}
+
+// ── CONSULTAS / FEEDBACK ──
+function renderConsultas(tipo) {
+  const q = document.getElementById('search-input').value.toLowerCase()
+  const filtered = consultas.filter(r => r.tipo === tipo && (!q || (r.phone||'').toLowerCase().includes(q)))
+  const titles = { consulta: 'Consultas y reclamos', feedback: 'Feedback de usuarios' }
+  document.getElementById('card-title').textContent = titles[tipo] || tipo
+  document.getElementById('card-count').textContent = filtered.length + ' registros'
+
+  if (!filtered.length) { document.getElementById('table-container').innerHTML = '<div class="empty">No hay registros aún</div>'; return }
+
+  const rows = filtered.map(r => {
+    const phone = (r.phone||'').replace('whatsapp:','')
+    const fecha = (r.fecha||'').replace('T',' ').substring(0,16)
+    const msg = formatMsg(r.mensaje||'—')
+    const badge = `<span class="badge b-${r.tipo}">${r.tipo}</span>`
+    return `<tr>
+      <td>${badge}</td>
+      <td class="muted-sm">${phone}</td>
+      <td class="msg-cell">${msg}</td>
+      <td class="muted-sm" style="white-space:nowrap">${fecha}</td>
+    </tr>`
+  }).join('')
+
+  document.getElementById('table-container').innerHTML = `
+    <table>
+      <thead><tr><th>Tipo</th><th>Teléfono</th><th>Mensaje</th><th>Fecha</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`
+}
+
+function formatMsg(msg) {
+  return msg
+    .replace(/muy buena/g, '<span class="cal-muybuena">muy buena</span>')
+    .replace(/Calificacion: buena/g, 'Calificacion: <span class="cal-buena">buena</span>')
+    .replace(/Calificacion: mala/g, 'Calificacion: <span class="cal-mala">mala</span>')
+}
+
+// ── INIT ──
+if (sessionStorage.getItem('admin_auth') === '1') {
+  document.getElementById('login-screen').style.display = 'none'
+  document.getElementById('dashboard').style.display = 'block'
+  loadAll()
+}
 </script>
 </body>
 </html>

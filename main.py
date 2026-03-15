@@ -635,6 +635,28 @@ def admin_set_pro(phone: str, secret: str = ""):
     return {"ok": True, "phone": phone}
 
 
+@app.get("/admin/usuarios")
+def admin_usuarios(secret: str = ""):
+    if secret != "postia2026":
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    usuarios = db.get_usuarios()
+    return {"total": len(usuarios), "usuarios": usuarios}
+
+
+@app.post("/admin/cambiar-plan")
+async def admin_cambiar_plan(request: Request, secret: str = ""):
+    if secret != "postia2026":
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    data = await request.json()
+    phone = data.get("phone")
+    plan = data.get("plan")
+    planes_fotos = {"trial": 3, "basico": 30, "pro": 100, "ilimitado": -1}
+    if not phone or plan not in planes_fotos:
+        return JSONResponse({"error": "datos invalidos"}, status_code=400)
+    db.cambiar_plan(phone, plan, planes_fotos[plan])
+    return {"ok": True, "phone": phone, "plan": plan}
+
+
 @app.get("/admin/consultas")
 def admin_consultas(secret: str = "", tipo: str = ""):
     if secret != "postia2026":
