@@ -128,12 +128,15 @@ def generar_prompt_imagen(descripcion: str, categoria: str, estilo: str, platafo
         f"El prompt debe especificar iluminación, fondo, composición, ángulo, ambiente y detalles visuales del producto. "
         f"Maximo 120 palabras. Responde SOLO con el prompt, sin explicaciones ni comillas."
     )
+    print(f"[prompt:meta_imagen] {meta_prompt}")
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": meta_prompt}],
         max_tokens=200,
     )
-    return response.choices[0].message.content.strip()
+    resultado = response.choices[0].message.content.strip()
+    print(f"[prompt:imagen_generado] {resultado}")
+    return resultado
 
 
 def _descargar_media_twilio(foto_url: str) -> bytes | None:
@@ -210,6 +213,7 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
                     f"Do not replace, add or remove any object. Clean neutral background. "
                     f"Optimized for {plataforma}. Photorealistic."
                 )
+            print(f"[prompt:flux] {flux_prompt}")
             result = fal_client.run(
                 "fal-ai/flux-pro/kontext",
                 arguments={
@@ -254,6 +258,7 @@ def investigar_producto_ml(descripcion: str) -> str:
         f"Si el vendedor no dio modelo exacto, aclaralo y sugerí que conviene especificarlo.\n"
         f"Formato: bullet points cortos, sin introduccion. Maximo 120 palabras."
     )
+    print(f"[prompt:ml_investigar] {prompt}")
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
@@ -284,6 +289,7 @@ def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
             f"- punto 4\n"
             f"NOTA_MODELO: ..."
         )
+        print(f"[prompt:ml_descripcion] {prompt}")
         response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
@@ -294,6 +300,7 @@ def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
     key = (plataforma, estilo)
     prompt_template = PROMPTS_TEXTO.get(key, PROMPTS_TEXTO[("Instagram", "realista")])
     prompt = prompt_template.format(desc=descripcion)
+    print(f"[prompt:descripcion:{plataforma}:{estilo}] {prompt}")
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
