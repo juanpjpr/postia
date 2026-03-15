@@ -111,7 +111,7 @@ def enviar_mensaje(to: str, texto: str, media_url: str = None):
         print(f"[twilio send] sid={msg.sid} status={msg.status}")
 
 
-def generar_prompt_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str) -> str:
+def generar_prompt_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str, negocio_desc: str = None) -> str:
     estilos_desc = {
         "realista": "fotografía realista y profesional, sin textos ni overlays",
         "llamativo": "imagen llamativa, colores vibrantes, energía y dinamismo, puede incluir texto con el nombre del producto",
@@ -123,8 +123,9 @@ def generar_prompt_imagen(descripcion: str, categoria: str, estilo: str, platafo
         "Facebook": "formato horizontal 16:9 para Facebook",
         "WhatsApp": "formato cuadrado, alto contraste, para estado de WhatsApp",
     }
+    contexto = f" El negocio es: {negocio_desc}." if negocio_desc else ""
     meta_prompt = (
-        f"Eres un experto en fotografía de productos y marketing visual para redes sociales. "
+        f"Eres un experto en fotografía de productos y marketing visual para redes sociales.{contexto} "
         f"Dame SOLO el prompt en inglés para generar con IA la mejor imagen posible para vender '{descripcion}' "
         f"(categoria: {categoria}) en {plataforma}. "
         f"Estilo deseado: {estilos_desc.get(estilo, estilo)}. "
@@ -193,7 +194,7 @@ def _descargar_media_twilio(foto_url: str) -> bytes | None:
     return None
 
 
-def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str, foto_url: str = None) -> str:
+def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str, foto_url: str = None, negocio_desc: str = None) -> str:
     size = "1536x1024" if plataforma == "Facebook" else "1024x1024"
 
     if foto_url:
@@ -258,7 +259,7 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
             return f"{BASE_URL}/static/{filename}"
         # Si no se pudo descargar, cae al modo generativo
 
-    prompt = generar_prompt_imagen(descripcion, categoria, estilo, plataforma)
+    prompt = generar_prompt_imagen(descripcion, categoria, estilo, plataforma, negocio_desc=negocio_desc)
     response = openai.images.generate(
         model="gpt-image-1",
         prompt=prompt,
@@ -295,7 +296,7 @@ def investigar_producto_ml(descripcion: str) -> str:
     return response.choices[0].message.content.strip()
 
 
-def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
+def generar_descripcion(descripcion: str, estilo: str, plataforma: str, negocio_desc: str = None) -> str:
     # Para Mercado Libre: primero investigamos el producto, luego generamos el copy
     if plataforma == "Mercado Libre":
         specs = investigar_producto_ml(descripcion)
@@ -328,6 +329,8 @@ def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
     key = (plataforma, estilo)
     prompt_template = PROMPTS_TEXTO.get(key, PROMPTS_TEXTO[("Instagram", "realista")])
     prompt = prompt_template.format(desc=descripcion)
+    if negocio_desc:
+        prompt += f" Contexto del negocio: {negocio_desc}."
     print(f"[prompt:descripcion:{plataforma}:{estilo}] {prompt}")
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
@@ -337,17 +340,18 @@ def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
     return response.choices[0].message.content.strip()
 
 
-def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list, foto_url: str = None):
+def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list, foto_url: str = None, modo: str = "rapido"):
     import traceback
     try:
-        print(f"[proceso] iniciando para {to} | estilo={estilo} | plataformas={plataformas}")
+        negocio_desc = db.get_negocio_desc(to) if modo == "personalizado" else None
+        print(f"[proceso] iniciando para {to} | estilo={estilo} | plataformas={plataformas} | negocio={'si' if negocio_desc else 'no'}")
         primera = plataformas[0]
-        imagen_url = generar_imagen(descripcion, categoria, estilo, primera, foto_url)
+        imagen_url = generar_imagen(descripcion, categoria, estilo, primera, foto_url, negocio_desc=negocio_desc)
         print(f"[proceso] imagen generada: {imagen_url}")
-        texto = generar_descripcion(descripcion, estilo, primera)
+        texto = generar_descripcion(descripcion, estilo, primera, negocio_desc=negocio_desc)
         respuesta = f"*{primera}*\n\n{texto}"
         for plat in plataformas[1:]:
-            texto_extra = generar_descripcion(descripcion, estilo, plat)
+            texto_extra = generar_descripcion(descripcion, estilo, plat, negocio_desc=negocio_desc)
             respuesta += f"\n\n---\n*{plat}*\n\n{texto_extra}"
         enviar_mensaje(to, respuesta, media_url=imagen_url)
         print(f"[proceso] mensaje enviado a {to}")
@@ -387,6 +391,7 @@ async def webhook(
             session["estilo"],
             plataformas,
             session.get("foto_url"),
+            session.get("modo", "rapido"),
         )
         return twiml("Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.")
 
@@ -425,7 +430,7 @@ async def webhook(
     if state == "waiting_modo":
         if body == "1":
             # Rapido: va directo al estilo
-            sessions[From] = {**session, "state": "waiting_estilo"}
+            sessions[From] = {**session, "state": "waiting_estilo", "modo": "rapido"}
             return twiml(
                 "Que estilo queres?\n"
                 "1 - Realista y profesional\n"
@@ -437,7 +442,7 @@ async def webhook(
             # Detallado: pregunta especifica segun categoria
             categoria = session.get("categoria", "otro")
             pregunta = PREGUNTAS_DETALLE.get(categoria, PREGUNTAS_DETALLE["otro"])
-            sessions[From] = {**session, "state": "waiting_detalle"}
+            sessions[From] = {**session, "state": "waiting_detalle", "modo": "personalizado"}
             return twiml(pregunta)
 
     # Paso 1: eligio categoria → pregunta modo
@@ -448,6 +453,14 @@ async def webhook(
             "1 - Rapido (uso la descripcion que me mandaste)\n"
             "2 - Personalizado (te hago una pregunta para mejorar el resultado)"
         )
+
+    # Comando: guardar descripcion del negocio
+    if body.lower().startswith("mi negocio:"):
+        desc = body[len("mi negocio:"):].strip()
+        if desc:
+            db.set_negocio_desc(From, desc)
+            return twiml(f"Perfil guardado! Voy a usar esta info cuando elijas modo Personalizado:\n\n_{desc}_\n\nPodes actualizarlo cuando quieras mandando *mi negocio: [descripcion]*")
+        return twiml("Manda la descripcion despues de 'mi negocio:'. Ej: *mi negocio: soy una parrilla en Palermo, vendo asados y empanadas*")
 
     # Primer contacto: cualquier mensaje de un usuario nuevo sin sesion
     if not session and int(NumMedia or 0) == 0:

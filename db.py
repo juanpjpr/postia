@@ -46,11 +46,15 @@ def init_db():
                 plan             TEXT DEFAULT 'trial'
             )
         """)
-        # Migracion suave: agregar columna si no existe
-        try:
-            cur.execute("ALTER TABLE suscripciones ADD COLUMN fotos_restantes INTEGER DEFAULT -1")
-        except Exception:
-            pass
+        # Migraciones suaves: agregar columnas si no existen
+        for migration in [
+            "ALTER TABLE suscripciones ADD COLUMN fotos_restantes INTEGER DEFAULT -1",
+            "ALTER TABLE suscripciones ADD COLUMN negocio_desc TEXT",
+        ]:
+            try:
+                cur.execute(migration)
+            except Exception:
+                pass
         conn.commit()
 
 
@@ -109,6 +113,19 @@ def verificar_acceso(phone: str) -> dict:
 
     return {"permitido": False, "estado": "sin_usos",
             "mensaje": f"Usaste tus {USOS_GRATIS} publicaciones gratis.\n\nSuscribite para publicaciones ilimitadas."}
+
+
+def get_negocio_desc(phone: str) -> str | None:
+    row = _get(phone)
+    return row.get("negocio_desc") if row else None
+
+
+def set_negocio_desc(phone: str, desc: str):
+    ph = _placeholder()
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(f"UPDATE suscripciones SET negocio_desc={ph} WHERE phone={ph}", (desc, phone))
+        conn.commit()
 
 
 def reembolsar_uso(phone: str):
