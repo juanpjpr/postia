@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PostIA — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #2e2e2e;
+      --text: #f0f0f0;
+      --muted: #888;
+      --accent: #e1306c;
+      --accent2: #833ab4;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --ig: linear-gradient(135deg, #833ab4, #e1306c, #fcaf45);
+    }
+    body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+    .login-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 48px 40px; width: 360px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .login-logo { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .login-logo span { background: var(--ig); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .login-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 36px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field input {
+      width: 100%; padding: 12px 14px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text); font-family: inherit; font-size: 0.95rem;
+      outline: none; transition: border 0.2s;
+    }
+    .field input:focus { border-color: var(--accent); }
+    .login-btn {
+      width: 100%; padding: 13px; margin-top: 8px;
+      background: var(--ig); border: none; border-radius: 10px;
+      color: white; font-family: inherit; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-error { color: var(--red); font-size: 0.85rem; margin-top: 12px; display: none; }
+
+    /* ── DASHBOARD ── */
+    #dashboard { display: none; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; border-bottom: 1px solid var(--border);
+      background: var(--surface); position: sticky; top: 0; z-index: 10;
+    }
+    .nav-logo { font-size: 18px; font-weight: 700; }
+    .nav-logo span { background: var(--ig); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .logout-btn {
+      padding: 7px 16px; border: 1px solid var(--border); border-radius: 8px;
+      background: none; color: var(--muted); font-family: inherit; font-size: 0.85rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── STATS ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 24px;
+    }
+    .stat-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.red { color: var(--red); }
+    .stat-value.purple { background: var(--ig); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* ── TABS ── */
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; width: fit-content; }
+    .tab {
+      padding: 8px 20px; border-radius: 9px; border: none;
+      background: none; color: var(--muted); font-family: inherit; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; font-weight: 500;
+    }
+    .tab.active { background: var(--surface2); color: var(--text); }
+
+    /* ── TABLE ── */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .table-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+    .table-title { font-weight: 700; }
+    .refresh-btn {
+      padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: none; color: var(--muted); font-family: inherit; font-size: 0.8rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 12px 20px; text-align: left; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+    td { padding: 14px 20px; font-size: 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+    }
+    .badge-feedback { background: rgba(131,58,180,0.15); color: #c084fc; }
+    .badge-consulta { background: rgba(225,48,108,0.15); color: #fb7185; }
+
+    .cal-muy-buena { color: var(--green); font-weight: 600; }
+    .cal-buena { color: var(--yellow); font-weight: 600; }
+    .cal-mala { color: var(--red); font-weight: 600; }
+
+    .phone-text { color: var(--muted); font-size: 0.82rem; }
+    .date-text { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+    .msg-text { max-width: 400px; line-height: 1.5; }
+
+    .empty { padding: 48px 24px; text-align: center; color: var(--muted); }
+
+    .loading { padding: 48px 24px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Post<span>IA</span></div>
+    <div class="login-sub">Panel de administración</div>
+    <div class="field">
+      <label>Usuario</label>
+      <input type="text" id="user-input" placeholder="postia" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="pass-input" placeholder="••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <nav>
+    <div class="nav-logo">Post<span>IA</span> <span style="color:var(--muted);font-size:0.8rem;font-weight:400">admin</span></div>
+    <div class="nav-right">
+      <span style="color:var(--muted);font-size:0.85rem" id="last-update"></span>
+      <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total consultas</div>
+        <div class="stat-value purple" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Feedbacks</div>
+        <div class="stat-value purple" id="stat-feedback">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Muy buena</div>
+        <div class="stat-value green" id="stat-muybuena">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Mala / Buena</div>
+        <div class="stat-value yellow" id="stat-negativa">—</div>
+      </div>
+    </div>
+
+    <!-- Tabs + table -->
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('todos')">Todos</button>
+      <button class="tab" onclick="setTab('consulta')">Consultas</button>
+      <button class="tab" onclick="setTab('feedback')">Feedback</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="table-title" id="table-title">Todos los registros</div>
+        <button class="refresh-btn" onclick="loadData()">↻ Actualizar</button>
+      </div>
+      <div id="table-container"><div class="loading">Cargando...</div></div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const SECRET = 'postia2026'
+  let allData = []
+  let currentTab = 'todos'
+
+  function doLogin() {
+    const user = document.getElementById('user-input').value.trim()
+    const pass = document.getElementById('pass-input').value.trim()
+    if (user === 'postia' && pass === 'postia') {
+      sessionStorage.setItem('admin_auth', '1')
+      document.getElementById('login-screen').style.display = 'none'
+      document.getElementById('dashboard').style.display = 'block'
+      loadData()
+    } else {
+      document.getElementById('login-error').style.display = 'block'
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin()
+  })
+
+  function doLogout() {
+    sessionStorage.removeItem('admin_auth')
+    document.getElementById('login-screen').style.display = 'flex'
+    document.getElementById('dashboard').style.display = 'none'
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch(`/admin/consultas?secret=${SECRET}`)
+      const data = await res.json()
+      allData = data.consultas || []
+      updateStats()
+      renderTable()
+      document.getElementById('last-update').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-AR')
+    } catch(e) {
+      document.getElementById('table-container').innerHTML = '<div class="empty">Error al cargar datos</div>'
+    }
+  }
+
+  function updateStats() {
+    const feedbacks = allData.filter(r => r.tipo === 'feedback')
+    const muyBuenas = feedbacks.filter(r => r.mensaje && r.mensaje.includes('muy buena'))
+    const negativas = feedbacks.filter(r => r.mensaje && (r.mensaje.includes('mala') || (r.mensaje.includes('buena') && !r.mensaje.includes('muy buena'))))
+
+    document.getElementById('stat-total').textContent = allData.length
+    document.getElementById('stat-feedback').textContent = feedbacks.length
+    document.getElementById('stat-muybuena').textContent = muyBuenas.length
+    document.getElementById('stat-negativa').textContent = negativas.length
+  }
+
+  function setTab(tab) {
+    currentTab = tab
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+    event.target.classList.add('active')
+    const titles = { todos: 'Todos los registros', consulta: 'Consultas y reclamos', feedback: 'Feedback de usuarios' }
+    document.getElementById('table-title').textContent = titles[tab]
+    renderTable()
+  }
+
+  function renderTable() {
+    const filtered = currentTab === 'todos' ? allData : allData.filter(r => r.tipo === currentTab)
+
+    if (filtered.length === 0) {
+      document.getElementById('table-container').innerHTML = '<div class="empty">No hay registros aún</div>'
+      return
+    }
+
+    const rows = filtered.map(r => {
+      const fecha = r.fecha ? r.fecha.replace('T', ' ').substring(0, 16) : '—'
+      const phone = r.phone ? r.phone.replace('whatsapp:', '') : '—'
+      const badgeClass = r.tipo === 'feedback' ? 'badge-feedback' : 'badge-consulta'
+      const msg = formatMensaje(r.mensaje || '—')
+      return `
+        <tr>
+          <td><span class="badge ${badgeClass}">${r.tipo}</span></td>
+          <td class="phone-text">${phone}</td>
+          <td class="msg-text">${msg}</td>
+          <td class="date-text">${fecha}</td>
+        </tr>
+      `
+    }).join('')
+
+    document.getElementById('table-container').innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Número</th>
+            <th>Mensaje</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `
+  }
+
+  function formatMensaje(msg) {
+    if (msg.includes('muy buena')) return msg.replace('muy buena', '<span class="cal-muy-buena">muy buena</span>')
+    if (msg.includes('Calificacion: buena')) return msg.replace('buena', '<span class="cal-buena">buena</span>')
+    if (msg.includes('mala')) return msg.replace('mala', '<span class="cal-mala">mala</span>')
+    return msg
+  }
+
+  // Auto-check session on load
+  if (sessionStorage.getItem('admin_auth') === '1') {
+    document.getElementById('login-screen').style.display = 'none'
+    document.getElementById('dashboard').style.display = 'block'
+    loadData()
+  }
+</script>
+</body>
+</html>

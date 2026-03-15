@@ -363,6 +363,11 @@ def terminos():
     return FileResponse("static/terminos.html")
 
 
+@app.get("/admin")
+def admin_panel():
+    return FileResponse("static/admin.html")
+
+
 @app.post("/webhook")
 async def webhook(
     background_tasks: BackgroundTasks,
