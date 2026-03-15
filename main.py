@@ -101,10 +101,14 @@ def twiml(mensaje: str) -> PlainTextResponse:
 
 
 def enviar_mensaje(to: str, texto: str, media_url: str = None):
-    kwargs = {"from_": TWILIO_NUMBER, "to": to, "body": texto}
     if media_url:
-        kwargs["media_url"] = [media_url]
-    twilio.messages.create(**kwargs)
+        msg1 = twilio.messages.create(from_=TWILIO_NUMBER, to=to, body="", media_url=[media_url])
+        print(f"[twilio send] imagen sid={msg1.sid} status={msg1.status}")
+        msg2 = twilio.messages.create(from_=TWILIO_NUMBER, to=to, body=texto)
+        print(f"[twilio send] texto sid={msg2.sid} status={msg2.status}")
+    else:
+        msg = twilio.messages.create(from_=TWILIO_NUMBER, to=to, body=texto)
+        print(f"[twilio send] sid={msg.sid} status={msg.status}")
 
 
 def generar_prompt_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str) -> str:
