@@ -10,6 +10,21 @@ Bot de WhatsApp que recibe una foto + descripción de un plato o producto y devu
 
 ---
 
+## La promesa del producto
+
+Hay dos cosas que PostIA tiene que lograr en quien lo usa:
+
+> *"Che, qué fácil y rápido es esto. Me sirve, me saca tiempo y trabajo."*
+
+> *"Che, estoy usando una app que está muy buena, me crea las publicaciones y me las mejora."*
+
+La primera es sobre **utilidad real**: el usuario siente que no hizo nada y ya tiene todo listo.
+La segunda es sobre **orgullo y recomendación**: el usuario lo cuenta porque siente que tiene algo que otros no tienen.
+
+Cada decisión de producto — cantidad de pasos, tono del bot, velocidad, calidad de la imagen — se evalúa contra estas dos reacciones.
+
+---
+
 ## A quién apunta PostIA
 
 **El usuario ideal es un emprendedor que no tiene tiempo, ni ganas, ni conocimientos técnicos para crear contenido todos los días.**
