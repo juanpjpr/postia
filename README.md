@@ -1,20 +1,22 @@
 # PostIA — Plan de Negocio
 
-> Bot de WhatsApp con IA que transforma fotos de platos y productos en contenido profesional listo para publicar.
+> Bot de WhatsApp con IA que transforma fotos de productos en imágenes profesionales con fondo personalizado + descripciones listas para publicar.
 
 ---
 
 ## Roadmap
 
 - [x] Bot de WhatsApp funcional con flujo completo
-- [x] Generación de imagen con GPT-image-1 y FLUX Kontext
+- [x] Generación de imagen con FLUX Kontext (fal.ai) — reemplaza fondo con foto real del usuario
+- [x] Fallback a GPT-image-1 si no hay foto
 - [x] Sistema de suscripciones con MercadoPago (3 planes)
-- [x] Landing page deployada en Railway
-- [x] Árbol de decisiones: modo rápido vs detallado por categoría
-- [ ] **Migrar DB a PostgreSQL** — SQLite en Railway se resetea en cada deploy
+- [x] Landing page deployada en Railway con carousel antes/después
+- [x] DB PostgreSQL en Railway
+- [x] Perfil de negocio por usuario (`mi negocio: ...`)
+- [x] Flujo de fondo por plan: básico = blanco/negro, pro = descripción libre
 - [ ] **Testear flujo de pago completo** con tarjetas de prueba de MercadoPago
 - [ ] **Dominio propio** para la landing (ej: postia.app)
-- [ ] **Resolver descarga de imágenes Twilio** para que FLUX Kontext funcione en producción
+- [ ] **Bajar USOS_GRATIS de 999 a 3** antes del lanzamiento
 
 ---
 
@@ -59,16 +61,13 @@ Cada interacción tiene que ser tan simple que una persona de 60 años con empre
 
 ## Experiencia del Usuario
 
-1. Abre WhatsApp
-2. Saca foto del plato/producto con el celu
-3. Manda la foto con texto: `"asado de tira con chimichurri"`
-4. Bot pregunta: _"¿Dónde vas a publicar?"_
-   - 1️⃣ Instagram
-   - 2️⃣ Mercado Libre
-   - 3️⃣ Facebook
-   - 4️⃣ Todos
-5. Cliente responde `"4"`
-6. En 30 segundos recibe todo listo para publicar
+1. Abre WhatsApp y manda foto del producto con el nombre como texto
+2. Bot pregunta categoría (comida, ropa, electrónica, etc.)
+3. Bot pregunta fondo:
+   - Plan básico: `1 - Fondo blanco` / `2 - Fondo negro`
+   - Plan pro: blanco, negro, o texto libre (ej: _"horno de barro"_, _"noche con luces"_)
+4. Bot pregunta plataforma (Instagram, Mercado Libre, Facebook, WhatsApp, Todos)
+5. En ~30 segundos recibe imagen con fondo reemplazado + descripción lista para copiar y pegar
 
 **Sin apps, sin logins, sin complicaciones.**
 
@@ -126,24 +125,27 @@ Bot se reactiva automáticamente
 
 ## Planes y Precios
 
-| Plan     | Plataformas    | Imágenes/mes | Precio        |
-|----------|----------------|--------------|---------------|
-| Starter  | 1 plataforma   | 20           | $8 USD/mes    |
-| Standard | 2 plataformas  | 50           | $18 USD/mes   |
-| Pro      | Todas          | Ilimitado    | $35 USD/mes   |
+| Plan      | Fotos/mes | Fondo               | Precio (ARS)  |
+|-----------|-----------|---------------------|---------------|
+| Trial     | 3 gratis  | Blanco o negro      | Gratis        |
+| Básico    | 30        | Blanco o negro      | $2.999/mes    |
+| Pro       | 100       | Libre (descripción) | $5.999/mes    |
+| Ilimitado | Sin límite| Libre (descripción) | $9.999/mes    |
 
 ---
 
 ## Stack Técnico
 
-| Componente    | Tecnología                   | Costo                     |
-|---------------|------------------------------|---------------------------|
-| Backend       | Spring Boot (Java)           | Gratis                    |
-| WhatsApp      | Twilio o Meta WhatsApp API   | ~$10 USD/mes              |
-| IA Imágenes   | OpenAI DALL-E API            | ~$0.05 por imagen         |
-| IA Texto      | OpenAI GPT-4 API             | ~$0.01 por descripción    |
-| Pagos         | MercadoPago Suscripciones    | % por transacción         |
-| Deploy        | Railway o Render             | Gratis para empezar       |
+| Componente    | Tecnología                        | Costo                     |
+|---------------|-----------------------------------|---------------------------|
+| Backend       | FastAPI (Python) en Railway       | ~$5 USD/mes               |
+| WhatsApp      | Twilio Sandbox → WhatsApp API     | ~$10 USD/mes              |
+| IA Imágenes   | fal.ai FLUX Kontext (img2img)     | ~$0.05 por imagen         |
+| IA Imágenes   | OpenAI GPT-image-1 (fallback)     | ~$0.04 por imagen         |
+| IA Texto      | OpenAI gpt-4o-mini                | ~$0.001 por descripción   |
+| Pagos         | MercadoPago (webhook automático)  | % por transacción         |
+| DB            | PostgreSQL en Railway             | incluido en plan           |
+| Deploy        | Railway (auto-deploy desde GitHub)| ~$5 USD/mes               |
 
 ---
 
@@ -260,24 +262,19 @@ Plataforma destino: [Instagram / Mercado Libre / Facebook]
 
 ## Checklist Próximos Pasos
 
-### Validación
-- [ ] Probar prompt con foto real de la parrilla del vecino
-- [ ] Validar que le gusta el resultado al dueño
-- [ ] Ofrecerle el servicio manual gratis 1 semana
+### Producción
+- [ ] Bajar `USOS_GRATIS` de 999 a 3 en `db.py` antes del lanzamiento
+- [ ] Testear flujo de pago completo con tarjetas de prueba MercadoPago
+- [ ] Migrar de Twilio Sandbox a número WhatsApp propio
+- [ ] Dominio propio (postia.app)
 
 ### Identidad
 - [ ] Registrar @postia en Instagram
-- [ ] Registrar postia.com.ar
-
-### Desarrollo
-- [ ] Armar webhook WhatsApp con Spring Boot
-- [ ] Integrar OpenAI API (imágenes + texto)
-- [ ] Lógica de plataformas (Instagram / ML / Facebook)
-- [ ] Integrar MercadoPago suscripciones
+- [ ] Grabar video demo antes/después para ads
 
 ### Go-to-market
-- [ ] Grabar video demo para ads
 - [ ] Conseguir 5 clientes piloto
+- [ ] Lanzar ads en Instagram apuntando a emprendedores
 
 ---
 
