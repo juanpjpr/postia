@@ -192,7 +192,7 @@ def _descargar_media_twilio(foto_url: str) -> bytes | None:
 def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: str, foto_url: str = None) -> str:
     size = "1536x1024" if plataforma == "Facebook" else "1024x1024"
 
-    if estilo in ("realista", "fondo_limpio") and foto_url:
+    if foto_url:
         img_bytes = _descargar_media_twilio(foto_url)
         if img_bytes:
             fal_image_url = fal_client.upload(img_bytes, "image/jpeg")
@@ -205,7 +205,21 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
                     f"Do not add, replace or remove any part of the product itself. "
                     f"Result: professional e-commerce photo with pure white background, optimized for {plataforma}."
                 )
-            else:
+            elif estilo == "llamativo":
+                flux_prompt = (
+                    f"Keep the exact same product — same shape, color, material and all details. "
+                    f"Enhance with vibrant, eye-catching lighting and a bold colorful background. "
+                    f"Make it look dynamic and energetic, like a promotional ad. "
+                    f"Do not replace or remove the product. Optimized for {plataforma}."
+                )
+            elif estilo == "elegante":
+                flux_prompt = (
+                    f"Keep the exact same product — same shape, color, material and all details. "
+                    f"Enhance with soft, premium studio lighting on a clean minimalist background. "
+                    f"Make it look luxurious and high-end, like a luxury brand campaign. "
+                    f"Do not replace or remove the product. No text overlays. Optimized for {plataforma}."
+                )
+            else:  # realista
                 flux_prompt = (
                     f"Professional e-commerce product photo. "
                     f"Improve ONLY the studio lighting, brightness, contrast and sharpness. "
