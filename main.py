@@ -650,7 +650,7 @@ async def admin_cambiar_plan(request: Request, secret: str = ""):
     data = await request.json()
     phone = data.get("phone")
     plan = data.get("plan")
-    planes_fotos = {"trial": 3, "basico": 30, "pro": 100, "ilimitado": -1}
+    planes_fotos = {"trial": 3, "basico": 30, "pro": 100, "ilimitado": -1, "libre": -1}
     if not phone or plan not in planes_fotos:
         return JSONResponse({"error": "datos invalidos"}, status_code=400)
     db.cambiar_plan(phone, plan, planes_fotos[plan])
