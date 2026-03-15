@@ -228,16 +228,22 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
                     f"Optimized for {plataforma}. Photorealistic."
                 )
             print(f"[prompt:flux] {flux_prompt}")
-            result = fal_client.run(
-                "fal-ai/flux-pro/kontext",
-                arguments={
-                    "prompt": flux_prompt,
-                    "image_url": fal_image_url,
-                    "guidance_scale": 3.0 if estilo == "fondo_limpio" else 2.5,
-                    "num_inference_steps": 28,
-                },
-            )
+            try:
+                result = fal_client.run(
+                    "fal-ai/flux-pro/kontext",
+                    arguments={
+                        "prompt": flux_prompt,
+                        "image_url": fal_image_url,
+                        "guidance_scale": 3.0 if estilo == "fondo_limpio" else 2.5,
+                        "num_inference_steps": 28,
+                    },
+                )
+                print(f"[fal] resultado keys: {list(result.keys()) if result else 'None'}")
+            except Exception as fal_err:
+                print(f"[fal] ERROR en run: {fal_err}")
+                raise
             img_data = httpx.get(result["images"][0]["url"], timeout=60).content
+            print(f"[fal] imagen descargada: {result['images'][0]['url']}")
             filename = f"{uuid.uuid4().hex}.png"
             with open(os.path.join("static", filename), "wb") as f:
                 f.write(img_data)
