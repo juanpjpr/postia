@@ -246,9 +246,13 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
             except Exception as fal_err:
                 print(f"[fal] ERROR en run: {fal_err}")
                 raise
-            img_data = httpx.get(result["images"][0]["url"], timeout=60).content
-            print(f"[fal] imagen descargada: {result['images'][0]['url']}")
-            filename = f"{uuid.uuid4().hex}.png"
+            fal_img_url = result["images"][0]["url"]
+            img_data = httpx.get(fal_img_url, timeout=60).content
+            ext = fal_img_url.split(".")[-1].split("?")[0].lower()
+            if ext not in ("jpg", "jpeg", "png", "webp"):
+                ext = "jpg"
+            print(f"[fal] imagen descargada: {fal_img_url} ext={ext}")
+            filename = f"{uuid.uuid4().hex}.{ext}"
             with open(os.path.join("static", filename), "wb") as f:
                 f.write(img_data)
             return f"{BASE_URL}/static/{filename}"
