@@ -10,6 +10,24 @@ Bot de WhatsApp que recibe una foto + descripción de un plato o producto y devu
 
 ---
 
+## A quién apunta PostIA
+
+**El usuario ideal es un emprendedor que no tiene tiempo, ni ganas, ni conocimientos técnicos para crear contenido todos los días.**
+
+Pensado para:
+- El dueño de una hamburguesería que saca la foto del plato y la manda sin pensar
+- La chica que vende ropa por Instagram y no sabe escribir hashtags
+- El que vende en Mercado Libre y no tiene idea de SEO
+- El almacén del barrio que quiere tener estado de WhatsApp todos los días
+
+**Lo que NO es PostIA:**
+No es una herramienta para marketers ni diseñadores. No requiere saber nada de IA, ni de redes sociales, ni de tecnología. El único requisito es saber mandar un mensaje de WhatsApp.
+
+**Principio de diseño del bot:**
+Cada interacción tiene que ser tan simple que una persona de 60 años con emprendimiento pueda usarla sin ayuda. Mensajes cortos, opciones numeradas, cero jerga técnica. El flujo rápido (foto → resultado en 3 toques) es el default. El detallado existe pero nunca se impone.
+
+---
+
 ## Experiencia del Usuario
 
 1. Abre WhatsApp
