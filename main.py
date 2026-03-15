@@ -301,26 +301,36 @@ def generar_descripcion(descripcion: str, estilo: str, plataforma: str) -> str:
     return response.choices[0].message.content.strip()
 
 
+def _procesar(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list, foto_url: str = None):
+    primera = plataformas[0]
+    imagen_url = generar_imagen(descripcion, categoria, estilo, primera, foto_url)
+    texto = generar_descripcion(descripcion, estilo, primera)
+    respuesta = f"*{primera}*\n\n{texto}"
+    for plat in plataformas[1:]:
+        texto_extra = generar_descripcion(descripcion, estilo, plat)
+        respuesta += f"\n\n---\n*{plat}*\n\n{texto_extra}"
+    enviar_mensaje(to, respuesta, media_url=imagen_url)
+
+
 def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: str, plataformas: list, foto_url: str = None):
-    try:
-        primera = plataformas[0]
-        imagen_url = generar_imagen(descripcion, categoria, estilo, primera, foto_url)
-        texto = generar_descripcion(descripcion, estilo, primera)
-        respuesta = f"*{primera}*\n\n{texto}"
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+    import traceback
 
-        for plat in plataformas[1:]:
-            texto_extra = generar_descripcion(descripcion, estilo, plat)
-            respuesta += f"\n\n---\n*{plat}*\n\n{texto_extra}"
-
-        enviar_mensaje(to, respuesta, media_url=imagen_url)
-
-    except Exception as e:
-        import traceback
-        tb = traceback.format_exc()
-        print(f"Error: {e}\n{tb}")
-        with open("error.log", "a") as f:
-            f.write(f"Error: {e}\n{tb}\n---\n")
-        enviar_mensaje(to, "Ocurrio un error. Intenta de nuevo.")
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(_procesar, to, descripcion, categoria, estilo, plataformas, foto_url)
+        try:
+            future.result(timeout=60)
+        except FuturesTimeout:
+            print(f"[timeout] generacion abortada para {to}")
+            db.reembolsar_uso(to)
+            enviar_mensaje(to, "La generacion tardo demasiado y la cancelamos. No te descontamos el uso, podes intentar de nuevo.")
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(f"[error] {e}\n{tb}")
+            with open("error.log", "a") as f:
+                f.write(f"Error: {e}\n{tb}\n---\n")
+            db.reembolsar_uso(to)
+            enviar_mensaje(to, "Algo fallo al generar el contenido. No te descontamos el uso, podes intentar de nuevo.")
 
 
 @app.get("/")

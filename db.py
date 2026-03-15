@@ -111,6 +111,21 @@ def verificar_acceso(phone: str) -> dict:
             "mensaje": f"Usaste tus {USOS_GRATIS} publicaciones gratis.\n\nSuscribite para publicaciones ilimitadas."}
 
 
+def reembolsar_uso(phone: str):
+    """Devuelve el uso descontado si la generacion fallo o tardo demasiado."""
+    row = _get(phone)
+    if not row:
+        return
+    ph = _placeholder()
+    with _get_conn() as conn:
+        cur = conn.cursor()
+        if row["estado"] == "trial":
+            cur.execute(f"UPDATE suscripciones SET usos_gratis=usos_gratis+1 WHERE phone={ph}", (phone,))
+        elif row["estado"] == "activo" and (row["fotos_restantes"] or 0) >= 0:
+            cur.execute(f"UPDATE suscripciones SET fotos_restantes=fotos_restantes+1 WHERE phone={ph}", (phone,))
+        conn.commit()
+
+
 def activar_suscripcion(phone: str, payment_id: str, plan: str = "basico"):
     from pagos import PLANES
     fotos = PLANES.get(plan, {}).get("fotos", 30)
