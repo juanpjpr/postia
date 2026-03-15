@@ -43,8 +43,12 @@ CATEGORIAS = {
 ESTILOS = {
     "1": "realista",
     "2": "llamativo",
-    "3": "elegante",
-    "4": "fondo_limpio",
+    "3": "fondo_limpio",  # subpregunta: blanco o negro
+}
+
+COLORES_FONDO = {
+    "1": "fondo_blanco",
+    "2": "fondo_negro",
 }
 
 # Pregunta especifica por categoria en modo detallado
@@ -202,13 +206,21 @@ def generar_imagen(descripcion: str, categoria: str, estilo: str, plataforma: st
         if img_bytes:
             fal_image_url = fal_client.upload(img_bytes, "image/jpeg")
             print(f"[fal] imagen subida: {fal_image_url}")
-            if estilo == "fondo_limpio":
+            if estilo in ("fondo_limpio", "fondo_blanco"):
                 flux_prompt = (
                     f"Remove the background completely and replace it with a clean solid white background. "
                     f"Improve the studio lighting and sharpness of the product. "
                     f"The product must remain 100% identical: same color, material, texture, shape and all details. "
                     f"Do not add, replace or remove any part of the product itself. "
                     f"Result: professional e-commerce photo with pure white background, optimized for {plataforma}."
+                )
+            elif estilo == "fondo_negro":
+                flux_prompt = (
+                    f"Remove the background completely and replace it with a pure solid black background. "
+                    f"Add dramatic studio lighting to highlight the product with contrast. "
+                    f"The product must remain 100% identical: same color, material, texture, shape and all details. "
+                    f"Do not add, replace or remove any part of the product itself. "
+                    f"Result: premium product photo with pure black background, optimized for {plataforma}."
                 )
             elif estilo == "llamativo":
                 flux_prompt = (
@@ -395,9 +407,25 @@ async def webhook(
         )
         return twiml("Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.")
 
+    # Paso 3b: eligio color de fondo
+    if state == "waiting_color_fondo" and body in COLORES_FONDO:
+        sessions[From] = {**session, "state": "waiting_platform", "estilo": COLORES_FONDO[body]}
+        return twiml(
+            "Donde vas a publicar?\n"
+            "1 - Instagram\n"
+            "2 - Mercado Libre\n"
+            "3 - Facebook\n"
+            "4 - WhatsApp\n"
+            "5 - Todos"
+        )
+
     # Paso 3: eligio estilo
     if state == "waiting_estilo" and body in ESTILOS:
-        sessions[From] = {**session, "state": "waiting_platform", "estilo": ESTILOS[body]}
+        estilo = ESTILOS[body]
+        if estilo == "fondo_limpio":
+            sessions[From] = {**session, "state": "waiting_color_fondo"}
+            return twiml("Que color de fondo queres?\n1 - Blanco (ideal para Mercado Libre)\n2 - Negro (ideal para electronica y premium)")
+        sessions[From] = {**session, "state": "waiting_platform", "estilo": estilo}
         return twiml(
             "Donde vas a publicar?\n"
             "1 - Instagram\n"
@@ -420,10 +448,9 @@ async def webhook(
         sessions[From] = {**session, "state": "waiting_estilo", "descripcion": desc_completa}
         return twiml(
             "Que estilo queres?\n"
-            "1 - Realista y profesional\n"
-            "2 - Llamativo y exagerado\n"
-            "3 - Elegante y premium\n"
-            "4 - Limpiar fondo (fondo blanco profesional)"
+            "1 - Realista (mejora la foto original)\n"
+            "2 - Modo IA (imagen llamativa generada con IA)\n"
+            "3 - Fondo blanco (ideal para vender)"
         )
 
     # Paso 2a: eligio modo (rapido o detallado)

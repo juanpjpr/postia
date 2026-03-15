@@ -879,6 +879,65 @@
     }
     .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
 
+    /* ── FONDO SECTION ── */
+    .fondo-section {
+      border-bottom: var(--border);
+      padding: 80px 40px;
+      background: #0a0a0a;
+      color: white;
+    }
+    .fondo-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .fondo-section .section-num { color: #555; margin-bottom: 16px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1px; }
+    .fondo-section h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.1; margin-bottom: 20px; }
+    .fondo-section p { color: #aaa; font-size: 1.05rem; line-height: 1.6; margin-bottom: 24px; }
+    .fondo-bullets { list-style: none; margin-bottom: 32px; display: flex; flex-direction: column; gap: 10px; }
+    .fondo-bullets li { color: #ccc; font-size: 0.95rem; }
+    .fondo-cards {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .fondo-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #aaa;
+      font-family: 'Space Mono', monospace;
+    }
+    .fondo-card-bg {
+      width: 100%;
+      height: 140px;
+      border-radius: 12px;
+      border: 1px solid #333;
+    }
+    .fondo-card-bg.white { background: #fff; }
+    .fondo-card-bg.black { background: #111; border-color: #444; }
+    .fondo-arrow { font-size: 2rem; color: #555; }
+    .fondo-tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .fondo-tag {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: #aaa;
+    }
+    @media (max-width: 768px) {
+      .fondo-content { grid-template-columns: 1fr; gap: 40px; }
+      .fondo-section { padding: 50px 24px; }
+    }
+
     /* ── FOOTER ── */
     footer {
       display: flex;
@@ -1129,10 +1188,45 @@
   </div>
 </section>
 
+<!-- FONDO BLANCO FEATURE -->
+<section class="fondo-section">
+  <div class="fondo-content">
+    <div class="fondo-text">
+      <div class="section-num">02 — FONDO BLANCO</div>
+      <h2>Foto profesional<br>en un toque.</h2>
+      <p>Saca el fondo de cualquier foto y dejalo blanco o negro, listo para Mercado Libre, tu catalogo o tu tienda online. Sin Photoshop, sin experiencia, desde WhatsApp.</p>
+      <ul class="fondo-bullets">
+        <li>✓ Fondo blanco — ideal para Mercado Libre y tiendas online</li>
+        <li>✓ Fondo negro — ideal para productos premium y electronica</li>
+        <li>✓ El producto queda identico, solo cambia el fondo</li>
+      </ul>
+      <a href="https://wa.me/5491100000000?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-primary">Probarlo gratis →</a>
+    </div>
+    <div class="fondo-visual">
+      <div class="fondo-cards">
+        <div class="fondo-card">
+          <div class="fondo-card-bg white"></div>
+          <span>Fondo blanco</span>
+        </div>
+        <div class="fondo-arrow">→</div>
+        <div class="fondo-card">
+          <div class="fondo-card-bg black"></div>
+          <span>Fondo negro</span>
+        </div>
+      </div>
+      <div class="fondo-tag-row">
+        <span class="fondo-tag">📦 Mercado Libre</span>
+        <span class="fondo-tag">🛍️ Tienda online</span>
+        <span class="fondo-tag">📸 Catalogo</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- COMO FUNCIONA -->
 <section class="how-section" id="como">
   <div class="how-header">
-    <div class="section-num">02 — COMO FUNCIONA</div>
+    <div class="section-num">03 — COMO FUNCIONA</div>
     <h2>Tres pasos. Sin complicaciones.</h2>
   </div>
   <div class="steps-grid">
@@ -1146,8 +1240,8 @@
     <div class="step">
       <div class="step-num">02</div>
       <div class="step-body">
-        <h3>Elegi categoria y estilo</h3>
-        <p>El bot te pregunta el tipo de producto y el estilo: realista, llamativo o elegante.</p>
+        <h3>Elegi el estilo</h3>
+        <p>Tres opciones: <strong>Realista</strong> (mejora tu foto), <strong>Modo IA</strong> (imagen llamativa generada) o <strong>Fondo blanco/negro</strong> (fondo limpio profesional).</p>
       </div>
     </div>
     <div class="step">
@@ -1173,7 +1267,7 @@
       <ul class="plan-features">
         <li>30 imagenes por mes</li>
         <li>Todas las plataformas</li>
-        <li>Los 4 estilos</li>
+        <li>Los 3 estilos</li>
         <li>Soporte por WhatsApp</li>
       </ul>
       <a href="https://wa.me/5491100000000?text=Quiero%20el%20plan%20Basico" class="plan-btn">Empezar →</a>
@@ -1186,7 +1280,7 @@
       <ul class="plan-features">
         <li>100 imagenes por mes</li>
         <li>Todas las plataformas</li>
-        <li>Los 4 estilos</li>
+        <li>Los 3 estilos</li>
         <li>Soporte prioritario</li>
       </ul>
       <a href="https://wa.me/5491100000000?text=Quiero%20el%20plan%20Pro" class="plan-btn">Empezar →</a>
@@ -1199,7 +1293,7 @@
       <ul class="plan-features">
         <li>Imagenes ilimitadas</li>
         <li>Todas las plataformas</li>
-        <li>Los 4 estilos</li>
+        <li>Los 3 estilos</li>
         <li>Soporte prioritario</li>
       </ul>
       <a href="https://wa.me/5491100000000?text=Quiero%20el%20plan%20Ilimitado" class="plan-btn">Empezar →</a>
