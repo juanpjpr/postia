@@ -275,14 +275,13 @@ async function loadConsultas() {
 
 // ── STATS ──
 function updateStats() {
-  const activos = usuarios.filter(u => u.estado === 'activo').length
+  const activos = usuarios.filter(u => u.estado === 'activo')
   const trial   = usuarios.filter(u => u.estado === 'trial').length
   const basico  = usuarios.filter(u => u.plan === 'basico').length
   const pro     = usuarios.filter(u => u.plan === 'pro').length
   const ilim    = usuarios.filter(u => u.plan === 'ilimitado').length
   const precios = { basico: 15000, pro: 30000, ilimitado: 50000 }
-  const COSTO_POR_USO = 50  // ~$0.05 USD en ARS
-  const activos = usuarios.filter(u => u.estado === 'activo')
+  const COSTO_POR_USO = 50
   const ingresos = activos.reduce((acc, u) => acc + (precios[u.plan] || 0), 0)
   const costoFijo = 20000
   const costoVar  = activos.reduce((acc, u) => acc + (u.total_usos || 0) * COSTO_POR_USO, 0)
@@ -297,7 +296,7 @@ function updateStats() {
     : 0
 
   document.getElementById('s-total').textContent = usuarios.length
-  document.getElementById('s-activos').textContent = activos
+  document.getElementById('s-activos').textContent = activos.length
   document.getElementById('s-trial').textContent = trial
   document.getElementById('s-basico').textContent = basico
   document.getElementById('s-pro').textContent = pro
