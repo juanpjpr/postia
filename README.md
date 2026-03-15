@@ -278,3 +278,18 @@ Plataforma destino: [Instagram / Mercado Libre / Facebook]
 ### Go-to-market
 - [ ] Grabar video demo para ads
 - [ ] Conseguir 5 clientes piloto
+
+---
+
+## Endpoints Admin (temporales, solo desarrollo)
+
+Base URL: `https://web-production-e9401.up.railway.app`
+Secret: `postia2026`
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `GET /admin/info?secret=` | Lista todos los usuarios y muestra si usa Postgres o SQLite |
+| `GET /admin/env?secret=` | Muestra el valor parcial de `DATABASE_URL` para debug |
+| `GET /admin/init-db?secret=` | Fuerza la creación de la tabla `suscripciones` |
+| `GET /admin/set-pro?phone=whatsapp%3A%2B549XXXXXXXX&secret=` | Pone un número específico en plan pro con 999 fotos |
+| `GET /admin/set-pro-all?secret=` | Pone todos los usuarios existentes en plan pro |
