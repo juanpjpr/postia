@@ -924,6 +924,37 @@
     .fondo-card-bg.white { background: #fff; }
     .fondo-card-bg.black { background: #111; border-color: #444; }
     .fondo-arrow { font-size: 2rem; color: #555; }
+    .fondo-before-after {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .fondo-img-wrap {
+      flex: 1;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+    .fondo-img-wrap img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+    }
+    .fondo-img-label {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+    .fondo-img-label.antes { background: rgba(255,255,255,0.15); color: #ccc; }
+    .fondo-img-label.despues { background: var(--ig-short); color: white; }
     .fondo-tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .fondo-tag {
       background: #1a1a1a;
@@ -1203,15 +1234,15 @@
       <a href="https://wa.me/5491100000000?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-primary">Probarlo gratis →</a>
     </div>
     <div class="fondo-visual">
-      <div class="fondo-cards">
-        <div class="fondo-card">
-          <div class="fondo-card-bg white"></div>
-          <span>Fondo blanco</span>
+      <div class="fondo-before-after">
+        <div class="fondo-img-wrap">
+          <img src="/static/guitarra_antes.jpg" alt="Antes">
+          <span class="fondo-img-label antes">Antes</span>
         </div>
         <div class="fondo-arrow">→</div>
-        <div class="fondo-card">
-          <div class="fondo-card-bg black"></div>
-          <span>Fondo negro</span>
+        <div class="fondo-img-wrap">
+          <img src="/static/guitarra_despues.jpg" alt="Despues">
+          <span class="fondo-img-label despues">Despues</span>
         </div>
       </div>
       <div class="fondo-tag-row">
