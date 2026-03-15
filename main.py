@@ -537,6 +537,14 @@ async def webhook_mp(request: Request):
     return JSONResponse({"ok": True})
 
 
+@app.get("/admin/env")
+def admin_env(secret: str = ""):
+    if secret != "postia2026":
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    db_url = os.getenv("DATABASE_URL", "NOT SET")
+    return {"DATABASE_URL": db_url[:30] + "..." if len(db_url) > 30 else db_url}
+
+
 @app.get("/admin/info")
 def admin_info(secret: str = ""):
     if secret != "postia2026":
