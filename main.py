@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Form, BackgroundTasks, Request
-from fastapi.responses import PlainTextResponse, JSONResponse
+from fastapi.responses import PlainTextResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
 from openai import OpenAI
@@ -264,7 +264,7 @@ def procesar_en_background(to: str, descripcion: str, categoria: str, estilo: st
 
 @app.get("/")
 def root():
-    return {"status": "PostIA corriendo"}
+    return FileResponse("static/index.html")
 
 
 @app.post("/webhook")
