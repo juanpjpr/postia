@@ -56,6 +56,7 @@ PLATAFORMAS = {
     "1": ["Instagram"],
     "2": ["Facebook"],
     "3": ["WhatsApp"],
+    "4": ["Mercado Libre"],
 }
 
 # --- Prompts de texto por plataforma + estilo ---
@@ -410,7 +411,8 @@ async def webhook(
             "Donde vas a publicar?\n"
             "1 - Instagram\n"
             "2 - Facebook\n"
-            "3 - WhatsApp"
+            "3 - WhatsApp\n"
+            "4 - Mercado Libre"
         )
 
     # Paso 1: eligio categoria → pregunta fondo segun plan
@@ -434,6 +436,23 @@ async def webhook(
                 "1 - Blanco\n"
                 "2 - Negro"
             )
+
+    # Paso 0: ingreso detalle opcional
+    if state == "waiting_detalle" and body:
+        detalle = "" if body.strip() == "0" else body.strip()
+        desc_completa = session["descripcion"]
+        if detalle:
+            desc_completa = f"{desc_completa}. {detalle}"
+        sessions[From] = {**session, "state": "waiting_categoria", "descripcion": desc_completa}
+        return twiml(
+            "Que tipo de producto es?\n"
+            "1 - Comida / Restaurante\n"
+            "2 - Ropa / Indumentaria\n"
+            "3 - Electronica\n"
+            "4 - Hogar / Deco\n"
+            "5 - Belleza / Cuidado\n"
+            "6 - Otro"
+        )
 
     # Feedback - eligio calificacion
     if state == "waiting_feedback" and body in ("1", "2", "3"):
@@ -504,7 +523,7 @@ async def webhook(
             return twiml(msg)
 
         sessions[From] = {
-            "state": "waiting_categoria",
+            "state": "waiting_detalle",
             "descripcion": body,
             "foto_url": MediaUrl0,
         }
@@ -517,14 +536,10 @@ async def webhook(
                 aviso = f"\n\n_(Te quedan {restantes} publicaciones gratis)_"
 
         return twiml(
-            f"Perfecto! Recibi tu foto de *{body}*.{aviso}\n\n"
-            "Que tipo de producto es?\n"
-            "1 - Comida / Restaurante\n"
-            "2 - Ropa / Indumentaria\n"
-            "3 - Electronica\n"
-            "4 - Hogar / Deco\n"
-            "5 - Belleza / Cuidado\n"
-            "6 - Otro"
+            f"Recibi tu foto de *{body}*.{aviso}\n\n"
+            "Queres agregar algun detalle especifico para la descripcion?\n"
+            "Ej: marca, modelo, precio, talle, ingredientes...\n\n"
+            "O escribi *0* para continuar sin agregar nada."
         )
 
     # Foto sin texto
