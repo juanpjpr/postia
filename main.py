@@ -54,10 +54,8 @@ PREGUNTAS_DETALLE = {
 
 PLATAFORMAS = {
     "1": ["Instagram"],
-    "2": ["Mercado Libre"],
-    "3": ["Facebook"],
-    "4": ["WhatsApp"],
-    "5": ["Instagram", "Mercado Libre", "Facebook", "WhatsApp"],
+    "2": ["Facebook"],
+    "3": ["WhatsApp"],
 }
 
 # --- Prompts de texto por plataforma + estilo ---
@@ -333,6 +331,7 @@ def procesar_en_background(to: str, descripcion: str, categoria: str, fondo_desc
             texto_extra = generar_descripcion(descripcion, fondo_desc, plat, negocio_desc=negocio_desc)
             respuesta += f"\n\n---\n*{plat}*\n\n{texto_extra}"
         enviar_mensaje(to, respuesta, media_url=imagen_url)
+        enviar_mensaje(to, "Si tenes alguna sugerencia o necesitas ayuda, escribi *sugerencia* o *ayuda*.")
         print(f"[proceso] mensaje enviado a {to}")
 
         # Feedback cada 5 usos
@@ -410,10 +409,8 @@ async def webhook(
         return twiml(
             "Donde vas a publicar?\n"
             "1 - Instagram\n"
-            "2 - Mercado Libre\n"
-            "3 - Facebook\n"
-            "4 - WhatsApp\n"
-            "5 - Todos"
+            "2 - Facebook\n"
+            "3 - WhatsApp"
         )
 
     # Paso 1: eligio categoria → pregunta fondo segun plan
@@ -421,21 +418,21 @@ async def webhook(
         row = db._get(From)
         plan = row.get("plan", "trial") if row else "trial"
         sessions[From] = {**session, "categoria": CATEGORIAS[body], "plan": plan, "state": "waiting_fondo_basico"}
-        if plan in ("pro", "ilimitado"):
+        if plan in ("pro", "ilimitado", "libre"):
             return twiml(
                 "Que fondo queres?\n"
-                "1 - Fondo blanco (ideal para Mercado Libre)\n"
-                "2 - Fondo negro (premium)\n\n"
-                "O escribi el fondo que quieras. Ej:\n"
+                "1 - Blanco\n"
+                "2 - Negro\n\n"
+                "O describilo como quieras:\n"
                 "• _horno de barro_\n"
-                "• _noche de verano_\n"
+                "• _noche con luces_\n"
                 "• _cocina moderna_"
             )
         else:
             return twiml(
                 "Que fondo queres?\n"
-                "1 - Fondo blanco (ideal para Mercado Libre)\n"
-                "2 - Fondo negro (premium)"
+                "1 - Blanco\n"
+                "2 - Negro"
             )
 
     # Feedback - eligio calificacion
@@ -458,7 +455,7 @@ async def webhook(
         return twiml("Gracias por tu opinion, lo tomamos en cuenta. Cuando quieras, manda una foto.")
 
     # Comando: ayuda / consulta
-    if body.lower() in ("ayuda", "consulta", "contacto", "soporte"):
+    if body.lower() in ("ayuda", "consulta", "contacto", "soporte", "sugerencia"):
         sessions[From] = {**session, "state": "waiting_consulta"}
         return twiml(
             "Claro, con gusto te ayudo.\n\n"
