@@ -1,4 +1,5 @@
 import os
+import json
 import sqlite3
 from datetime import datetime, timedelta
 
@@ -54,6 +55,25 @@ def init_db():
         raise
     finally:
         conn.close()
+
+    # Tabla sessions
+    conn3 = _get_conn()
+    try:
+        cur = conn3.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS sessions (
+                phone      TEXT PRIMARY KEY,
+                data       TEXT,
+                updated_at TEXT
+            )
+        """ )
+        conn3.commit()
+        print("[db] tabla sessions OK")
+    except Exception as e:
+        conn3.rollback()
+        print(f"[db] error creando tabla sessions: {e}")
+    finally:
+        conn3.close()
 
     # Tabla consultas
     conn2 = _get_conn()
@@ -184,6 +204,49 @@ def reembolsar_uso(phone: str):
         elif row["estado"] == "activo" and (row["fotos_restantes"] or 0) >= 0:
             cur.execute(f"UPDATE suscripciones SET fotos_restantes=fotos_restantes+1 WHERE phone={ph}", (phone,))
         conn.commit()
+
+
+def get_all_sessions() -> dict:
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT phone, data FROM sessions")
+        return {r[0]: json.loads(r[1]) for r in cur.fetchall()}
+    except Exception:
+        return {}
+    finally:
+        conn.close()
+
+
+def save_session(phone: str, data: dict):
+    ph = _placeholder()
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        if DATABASE_URL:
+            cur.execute(f"""
+                INSERT INTO sessions (phone, data, updated_at) VALUES ({ph},{ph},{ph})
+                ON CONFLICT(phone) DO UPDATE SET data=EXCLUDED.data, updated_at=EXCLUDED.updated_at
+            """, (phone, json.dumps(data), datetime.now().isoformat()))
+        else:
+            cur.execute(f"""
+                INSERT INTO sessions (phone, data, updated_at) VALUES ({ph},{ph},{ph})
+                ON CONFLICT(phone) DO UPDATE SET data=excluded.data, updated_at=excluded.updated_at
+            """, (phone, json.dumps(data), datetime.now().isoformat()))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_session(phone: str):
+    ph = _placeholder()
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"DELETE FROM sessions WHERE phone={ph}", (phone,))
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def get_usuarios() -> list:

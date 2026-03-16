@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from typing import Optional
 from openai import OpenAI
 from twilio.rest import Client as TwilioClient
+from twilio.request_validator import RequestValidator
 from dotenv import load_dotenv
 import os
 import base64
@@ -11,6 +12,9 @@ import uuid
 import io
 import httpx
 import fal_client
+import secrets as _secrets
+import time
+from collections import defaultdict
 import db
 import pagos
 
@@ -27,7 +31,39 @@ TWILIO_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 _railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
 BASE_URL = os.getenv("BASE_URL") or (f"https://{_railway_domain}" if _railway_domain else "http://localhost:8001")
 
-sessions = {}
+# ── Sesiones (cache en memoria + persistencia en DB) ──────────────────────────
+_sessions: dict = db.get_all_sessions()
+
+def _get_session(phone: str) -> dict:
+    return _sessions.get(phone, {})
+
+def _set_session(phone: str, data: dict):
+    _sessions[phone] = data
+    db.save_session(phone, data)
+
+def _del_session(phone: str):
+    _sessions.pop(phone, None)
+    db.delete_session(phone)
+
+# ── Rate limiting ─────────────────────────────────────────────────────────────
+_rl: dict = defaultdict(list)
+_RL_MAX = 20
+_RL_WINDOW = 60
+
+def _rate_ok(phone: str) -> bool:
+    now = time.time()
+    _rl[phone] = [t for t in _rl[phone] if now - t < _RL_WINDOW]
+    if len(_rl[phone]) >= _RL_MAX:
+        return False
+    _rl[phone].append(now)
+    return True
+
+# ── Admin tokens ──────────────────────────────────────────────────────────────
+_admin_tokens: set = set()
+
+def _check_admin(request: Request) -> bool:
+    token = request.headers.get("X-Admin-Token", "")
+    return bool(token and token in _admin_tokens)
 
 # --- Opciones del flujo ---
 
@@ -345,7 +381,7 @@ def procesar_en_background(to: str, descripcion: str, categoria: str, fondo_desc
                 "3 - Muy buena\n\n"
                 "_(Podes ignorar este mensaje si no queres responder)_"
             )
-            sessions[to] = {**sessions.get(to, {}), "state": "waiting_feedback"}
+            _set_session(to, {**_get_session(to), "state": "waiting_feedback"})
     except Exception as e:
         tb = traceback.format_exc()
         print(f"[error] {e}\n{tb}")
@@ -370,20 +406,34 @@ def admin_panel():
 
 @app.post("/webhook")
 async def webhook(
+    request: Request,
     background_tasks: BackgroundTasks,
     From: str = Form(...),
     Body: Optional[str] = Form(""),
     NumMedia: Optional[int] = Form(0),
     MediaUrl0: Optional[str] = Form(None),
 ):
+    # Validacion de firma Twilio
+    validator = RequestValidator(os.getenv("TWILIO_AUTH_TOKEN", ""))
+    form_data = dict(await request.form())
+    sig = request.headers.get("X-Twilio-Signature", "")
+    if not validator.validate(str(request.url), form_data, sig):
+        print(f"[webhook] firma invalida desde {From}")
+        return PlainTextResponse("Forbidden", status_code=403)
+
+    # Rate limiting
+    if not _rate_ok(From):
+        print(f"[webhook] rate limit para {From}")
+        return twiml("Muchas solicitudes. Espera un momento.")
+
     body = Body.strip() if Body else ""
-    session = sessions.get(From, {})
+    session = _get_session(From)
     state = session.get("state")
 
     # Paso 3: eligio plataforma → genera
     if state == "waiting_platform" and body in PLATAFORMAS:
         plataformas = PLATAFORMAS[body]
-        sessions[From] = {**session, "state": "done"}
+        _set_session(From, {**session, "state": "done"})
         background_tasks.add_task(
             procesar_en_background,
             From,
@@ -406,7 +456,7 @@ async def webhook(
             fondo = body
         else:
             return twiml("Respondé 1 para fondo blanco o 2 para fondo negro.")
-        sessions[From] = {**session, "state": "waiting_platform", "fondo_desc": fondo}
+        _set_session(From, {**session, "state": "waiting_platform", "fondo_desc": fondo})
         return twiml(
             "Donde vas a publicar?\n"
             "1 - Instagram\n"
@@ -419,7 +469,7 @@ async def webhook(
     if state == "waiting_categoria" and body in CATEGORIAS:
         row = db._get(From)
         plan = row.get("plan", "trial") if row else "trial"
-        sessions[From] = {**session, "categoria": CATEGORIAS[body], "plan": plan, "state": "waiting_fondo_basico"}
+        _set_session(From, {**session, "categoria": CATEGORIAS[body], "plan": plan, "state": "waiting_fondo_basico"})
         if plan in ("pro", "ilimitado", "libre"):
             return twiml(
                 "Que fondo queres?\n"
@@ -443,7 +493,7 @@ async def webhook(
         desc_completa = session["descripcion"]
         if detalle:
             desc_completa = f"{desc_completa}. {detalle}"
-        sessions[From] = {**session, "state": "waiting_categoria", "descripcion": desc_completa}
+        _set_session(From, {**session, "state": "waiting_categoria", "descripcion": desc_completa})
         return twiml(
             "Que tipo de producto es?\n"
             "1 - Comida / Restaurante\n"
@@ -459,23 +509,23 @@ async def webhook(
         calificaciones = {"1": "mala", "2": "buena", "3": "muy buena"}
         cal = calificaciones[body]
         if body in ("1", "2"):
-            sessions[From] = {**session, "state": "waiting_feedback_detalle", "feedback_cal": cal}
+            _set_session(From, {**session, "state": "waiting_feedback_detalle", "feedback_cal": cal})
             return twiml("Gracias por responder. Que mejorarias?")
         else:
             db.guardar_consulta(From, "feedback", f"Calificacion: {cal}")
-            sessions[From] = {**session, "state": None}
+            _set_session(From, {**session, "state": None})
             return twiml("Gracias! Nos alegra que te este yendo bien. Cuando quieras, manda una foto.")
 
     # Feedback - escribio que mejoraria
     if state == "waiting_feedback_detalle" and body:
         cal = session.get("feedback_cal", "")
         db.guardar_consulta(From, "feedback", f"Calificacion: {cal} | Mejora: {body}")
-        sessions[From] = {**session, "state": None}
+        _set_session(From, {**session, "state": None})
         return twiml("Gracias por tu opinion, lo tomamos en cuenta. Cuando quieras, manda una foto.")
 
     # Comando: ayuda / consulta
     if body.lower() in ("ayuda", "consulta", "contacto", "soporte", "sugerencia"):
-        sessions[From] = {**session, "state": "waiting_consulta"}
+        _set_session(From, {**session, "state": "waiting_consulta"})
         return twiml(
             "Claro, con gusto te ayudo.\n\n"
             "Contame tu consulta, reclamo o sugerencia y te respondo a la brevedad."
@@ -483,7 +533,7 @@ async def webhook(
 
     if state == "waiting_consulta" and body:
         db.guardar_consulta(From, "consulta", body)
-        sessions[From] = {**session, "state": None}
+        _set_session(From, {**session, "state": None})
         return twiml(
             "Gracias, recibimos tu mensaje. Te respondemos pronto por aca.\n\n"
             "Cuando quieras, manda una foto para generar una publicacion."
@@ -499,7 +549,7 @@ async def webhook(
 
     # Primer contacto: cualquier mensaje de un usuario nuevo sin sesion
     if not session and int(NumMedia or 0) == 0:
-        sessions[From] = {"state": "welcomed"}
+        _set_session(From, {"state": "welcomed"})
         return twiml(
             "Hola! Soy *PostIA*.\n\n"
             "Transformo fotos de tus productos en publicaciones profesionales listas para Instagram, Mercado Libre, Facebook y WhatsApp.\n\n"
@@ -522,11 +572,11 @@ async def webhook(
                 msg += f"\n\n⭐ *Plan Ilimitado* — sin limite — $9.999\n{links['ilimitado']}"
             return twiml(msg)
 
-        sessions[From] = {
+        _set_session(From, {
             "state": "waiting_detalle",
             "descripcion": body,
             "foto_url": MediaUrl0,
-        }
+        })
         aviso = ""
         if acceso["estado"] == "trial":
             restantes = acceso["usos_restantes"]
@@ -598,9 +648,19 @@ async def webhook_mp(request: Request):
     return JSONResponse({"ok": True})
 
 
+@app.post("/admin/login")
+async def admin_login(request: Request):
+    data = await request.json()
+    if data.get("user") == "postia" and data.get("password") == "postia":
+        token = _secrets.token_urlsafe(32)
+        _admin_tokens.add(token)
+        return {"token": token}
+    return JSONResponse({"error": "invalid credentials"}, status_code=401)
+
+
 @app.get("/admin/init-db")
-def admin_init_db(secret: str = ""):
-    if secret != "postia2026":
+def admin_init_db(request: Request):
+    if not _check_admin(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     try:
         db.init_db()
@@ -610,16 +670,16 @@ def admin_init_db(secret: str = ""):
 
 
 @app.get("/admin/env")
-def admin_env(secret: str = ""):
-    if secret != "postia2026":
+def admin_env(request: Request):
+    if not _check_admin(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     db_url = os.getenv("DATABASE_URL", "NOT SET")
     return {"DATABASE_URL": db_url[:30] + "..." if len(db_url) > 30 else db_url}
 
 
 @app.get("/admin/info")
-def admin_info(secret: str = ""):
-    if secret != "postia2026":
+def admin_info(request: Request):
+    if not _check_admin(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     with db._get_conn() as conn:
         cur = conn.cursor()
@@ -629,8 +689,8 @@ def admin_info(secret: str = ""):
 
 
 @app.get("/admin/set-pro")
-def admin_set_pro(phone: str, secret: str = ""):
-    if secret != "postia2026":
+def admin_set_pro(request: Request, phone: str):
+    if not _check_admin(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     ph = db._placeholder()
     conn = db._get_conn()
@@ -648,16 +708,16 @@ def admin_set_pro(phone: str, secret: str = ""):
 
 
 @app.get("/admin/usuarios")
-def admin_usuarios(secret: str = ""):
-    if secret != "postia2026":
+def admin_usuarios(request: Request):
+    if not _check_admin(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     usuarios = db.get_usuarios()
     return {"total": len(usuarios), "usuarios": usuarios}
 
 
 @app.post("/admin/cambiar-plan")
-async def admin_cambiar_plan(request: Request, secret: str = ""):
-    if secret != "postia2026":
+async def admin_cambiar_plan(request: Request):
+    if not _check_admin(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     data = await request.json()
     phone = data.get("phone")
@@ -670,8 +730,8 @@ async def admin_cambiar_plan(request: Request, secret: str = ""):
 
 
 @app.get("/admin/consultas")
-def admin_consultas(secret: str = "", tipo: str = ""):
-    if secret != "postia2026":
+def admin_consultas(request: Request, tipo: str = ""):
+    if not _check_admin(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     rows = db.get_consultas()
     if tipo:
@@ -680,8 +740,8 @@ def admin_consultas(secret: str = "", tipo: str = ""):
 
 
 @app.get("/admin/set-pro-all")
-def admin_set_pro_all(secret: str = ""):
-    if secret != "postia2026":
+def admin_set_pro_all(request: Request):
+    if not _check_admin(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     ph = db._placeholder()
     with db._get_conn() as conn:

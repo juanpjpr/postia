@@ -229,27 +229,34 @@
 </div>
 
 <script>
-const SECRET = 'postia2026'
 let usuarios = []
 let consultas = []
 let currentTab = 'clientes'
 
+function _token() { return sessionStorage.getItem('admin_token') || '' }
+function _authHeader() { return { 'X-Admin-Token': _token() } }
+
 // ── AUTH ──
-function doLogin() {
+async function doLogin() {
   const u = document.getElementById('user-input').value.trim()
   const p = document.getElementById('pass-input').value.trim()
-  if (u === 'postia' && p === 'postia') {
-    sessionStorage.setItem('admin_auth', '1')
-    document.getElementById('login-screen').style.display = 'none'
-    document.getElementById('dashboard').style.display = 'block'
-    loadAll()
-  } else {
+  try {
+    const res = await fetch('/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: u, password: p })
+    })
+    if (!res.ok) throw new Error('invalid')
+    const data = await res.json()
+    sessionStorage.setItem('admin_token', data.token)
+    showDashboard()
+  } catch {
     document.getElementById('login-error').style.display = 'block'
   }
 }
 document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin() })
 function doLogout() {
-  sessionStorage.removeItem('admin_auth')
+  sessionStorage.removeItem('admin_token')
   location.reload()
 }
 
@@ -260,7 +267,7 @@ async function loadAll() {
 }
 
 async function loadUsuarios() {
-  const res = await fetch(`/admin/usuarios?secret=${SECRET}`)
+  const res = await fetch('/admin/usuarios', { headers: _authHeader() })
   const data = await res.json()
   usuarios = data.usuarios || []
   updateStats()
@@ -268,7 +275,7 @@ async function loadUsuarios() {
 }
 
 async function loadConsultas() {
-  const res = await fetch(`/admin/consultas?secret=${SECRET}`)
+  const res = await fetch('/admin/consultas', { headers: _authHeader() })
   const data = await res.json()
   consultas = data.consultas || []
   if (currentTab !== 'clientes') renderCurrent()
@@ -396,9 +403,9 @@ async function guardarPlan(fullPhone, id) {
   const plan = sel.value
   btn.textContent = '...'
   btn.disabled = true
-  const res = await fetch(`/admin/cambiar-plan?secret=${SECRET}`, {
+  const res = await fetch('/admin/cambiar-plan', {
     method: 'POST',
-    headers: {'Content-Type':'application/json'},
+    headers: { 'Content-Type': 'application/json', ..._authHeader() },
     body: JSON.stringify({phone: fullPhone, plan})
   })
   const data = await res.json()
@@ -449,12 +456,13 @@ function formatMsg(msg) {
 }
 
 // ── INIT ──
-if (sessionStorage.getItem('admin_auth') === '1') {
+function showDashboard() {
   document.getElementById('login-screen').style.display = 'none'
   document.getElementById('dashboard').style.display = 'block'
   loadAll()
   setInterval(loadAll, 30000)
 }
+if (_token()) showDashboard()
 </script>
 </body>
 </html>
