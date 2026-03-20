@@ -14,6 +14,10 @@
 - [x] DB PostgreSQL en Railway
 - [x] Perfil de negocio por usuario (`mi negocio: ...`)
 - [x] Flujo de fondo por plan: básico = blanco/negro, pro = descripción libre
+- [x] Sessions persistidas en DB (sobreviven redeploys)
+- [x] Rate limiting por número (20 mensajes/60s)
+- [x] Validación de firma Twilio en webhook
+- [x] Admin auth server-side con token (sin secret en URL ni en JS)
 - [ ] **Testear flujo de pago completo** con tarjetas de prueba de MercadoPago
 - [ ] **Dominio propio** para la landing (ej: postia.app)
 - [ ] **Bajar USOS_GRATIS de 999 a 3** antes del lanzamiento
@@ -278,15 +282,21 @@ Plataforma destino: [Instagram / Mercado Libre / Facebook]
 
 ---
 
-## Endpoints Admin (temporales, solo desarrollo)
+## Endpoints Admin
 
 Base URL: `https://web-production-e9401.up.railway.app`
-Secret: `postia2026`
+Panel visual: `/admin` (user: `postia`, pass en env var `ADMIN_PASSWORD`)
 
-| Endpoint | Descripción |
-|----------|-------------|
-| `GET /admin/info?secret=` | Lista todos los usuarios y muestra si usa Postgres o SQLite |
-| `GET /admin/env?secret=` | Muestra el valor parcial de `DATABASE_URL` para debug |
-| `GET /admin/init-db?secret=` | Fuerza la creación de la tabla `suscripciones` |
-| `GET /admin/set-pro?phone=whatsapp%3A%2B549XXXXXXXX&secret=` | Pone un número específico en plan pro con 999 fotos |
-| `GET /admin/set-pro-all?secret=` | Pone todos los usuarios existentes en plan pro |
+Auth: todos los endpoints requieren header `X-Admin-Token: <token>` obtenido via login.
+
+```
+POST /admin/login          { user, password } → { token }
+GET  /admin/usuarios       Lista usuarios con stats
+POST /admin/cambiar-plan   { phone, plan } → cambia plan
+GET  /admin/consultas      Lista consultas y feedback
+GET  /admin/info           Info DB y usuarios (debug)
+GET  /admin/env            Valor parcial DATABASE_URL (debug)
+GET  /admin/init-db        Fuerza creación de tablas
+GET  /admin/set-pro?phone= Pone número en plan pro
+GET  /admin/set-pro-all    Pone todos en plan pro
+```
