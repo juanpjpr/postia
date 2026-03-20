@@ -593,9 +593,38 @@ async def webhook(
             "O escribi *0* para continuar sin agregar nada."
         )
 
-    # Foto sin texto
-    if int(NumMedia or 0) > 0 and not body:
-        return twiml("Manda la foto con el nombre del producto como texto. Ejemplo: *asado de tira con chimichurri*")
+    # Foto sin texto → guardar foto y pedir descripcion
+    if int(NumMedia or 0) > 0 and MediaUrl0 and not body:
+        _set_session(From, {**session, "state": "waiting_descripcion", "foto_url": MediaUrl0})
+        return twiml("Recibi tu foto! Como se llama el producto?")
+
+    # Tiene descripcion para foto guardada
+    if state == "waiting_descripcion" and body and int(NumMedia or 0) == 0:
+        acceso = db.verificar_acceso(From)
+        if not acceso["permitido"]:
+            links = pagos.crear_links_todos_los_planes(From)
+            msg = acceso["mensaje"] + "\n\nElegi tu plan:"
+            if "basico" in links:
+                msg += f"\n\n🔹 *Plan Basico* — 30 fotos/mes — $2.999\n{links['basico']}"
+            if "pro" in links:
+                msg += f"\n\n🔸 *Plan Pro* — 100 fotos/mes — $5.999\n{links['pro']}"
+            if "ilimitado" in links:
+                msg += f"\n\n⭐ *Plan Ilimitado* — sin limite — $9.999\n{links['ilimitado']}"
+            return twiml(msg)
+        aviso = ""
+        if acceso["estado"] == "trial":
+            restantes = acceso["usos_restantes"]
+            if restantes == 0:
+                aviso = "\n\n_(Es tu ultima publicacion gratis. Despues necesitas suscripcion.)_"
+            else:
+                aviso = f"\n\n_(Te quedan {restantes} publicaciones gratis)_"
+        _set_session(From, {**session, "state": "waiting_detalle", "descripcion": body})
+        return twiml(
+            f"Recibi tu foto de *{body}*.{aviso}\n\n"
+            "Queres agregar algun detalle especifico para la descripcion?\n"
+            "Ej: marca, modelo, precio, talle, ingredientes...\n\n"
+            "O escribi *0* para continuar sin agregar nada."
+        )
 
     # Mensaje sin foto
     return twiml(
