@@ -417,7 +417,8 @@ async def webhook(
     validator = RequestValidator(os.getenv("TWILIO_AUTH_TOKEN", ""))
     form_data = dict(await request.form())
     sig = request.headers.get("X-Twilio-Signature", "")
-    if not validator.validate(str(request.url), form_data, sig):
+    url = str(request.url).replace("http://", "https://")
+    if not validator.validate(url, form_data, sig):
         print(f"[webhook] firma invalida desde {From}")
         return PlainTextResponse("Forbidden", status_code=403)
 
