@@ -17,29 +17,27 @@
 - [x] Sessions persistidas en DB (sobreviven redeploys)
 - [x] Rate limiting por número (20 mensajes/60s)
 - [x] Validación de firma Twilio en webhook
-- [x] Admin auth server-side con token (sin secret en URL ni en JS)
-- [ ] **Testear flujo de pago completo** con tarjetas de prueba de MercadoPago
+- [x] Admin auth server-side con token
+- [x] Número WhatsApp real (+13186484804) — migrado de sandbox
+- [x] USOS_GRATIS = 3
+- [x] MercadoPago en producción (MP_SANDBOX=false)
+- [ ] **Testear flujo de pago completo** con cuenta de tercero
 - [ ] **Dominio propio** para la landing (ej: postia.app)
-- [ ] **Bajar USOS_GRATIS de 999 a 3** antes del lanzamiento
+- [ ] **Grabar video demo** antes/después para ads
 
 ---
 
 ## La Idea
 
-Bot de WhatsApp que recibe una foto + descripción de un plato o producto y devuelve automáticamente una **imagen mejorada con IA + descripción lista para publicar**, optimizada según la plataforma elegida. El cliente paga suscripción mensual vía MercadoPago.
+Bot de WhatsApp que recibe una foto + descripción de un producto y devuelve automáticamente una **imagen con fondo reemplazado por IA + descripción lista para publicar**, optimizada según la plataforma elegida. El cliente paga suscripción mensual vía MercadoPago.
 
 ---
 
 ## La promesa del producto
 
-Hay dos cosas que PostIA tiene que lograr en quien lo usa:
-
 > *"Che, qué fácil y rápido es esto. Me sirve, me saca tiempo y trabajo."*
 
 > *"Che, estoy usando una app que está muy buena, me crea las publicaciones y me las mejora."*
-
-La primera es sobre **utilidad real**: el usuario siente que no hizo nada y ya tiene todo listo.
-La segunda es sobre **orgullo y recomendación**: el usuario lo cuenta porque siente que tiene algo que otros no tienen.
 
 Cada decisión de producto — cantidad de pasos, tono del bot, velocidad, calidad de la imagen — se evalúa contra estas dos reacciones.
 
@@ -55,12 +53,6 @@ Pensado para:
 - El que vende en Mercado Libre y no tiene idea de SEO
 - El almacén del barrio que quiere tener estado de WhatsApp todos los días
 
-**Lo que NO es PostIA:**
-No es una herramienta para marketers ni diseñadores. No requiere saber nada de IA, ni de redes sociales, ni de tecnología. El único requisito es saber mandar un mensaje de WhatsApp.
-
-**Principio de diseño del bot:**
-Cada interacción tiene que ser tan simple que una persona de 60 años con emprendimiento pueda usarla sin ayuda. Mensajes cortos, opciones numeradas, cero jerga técnica. El flujo rápido (foto → resultado en 3 toques) es el default. El detallado existe pero nunca se impone.
-
 ---
 
 ## Experiencia del Usuario
@@ -68,62 +60,12 @@ Cada interacción tiene que ser tan simple que una persona de 60 años con empre
 1. Abre WhatsApp y manda foto del producto con el nombre como texto
 2. Bot pregunta categoría (comida, ropa, electrónica, etc.)
 3. Bot pregunta fondo:
-   - Plan básico: `1 - Fondo blanco` / `2 - Fondo negro`
-   - Plan pro: blanco, negro, o texto libre (ej: _"horno de barro"_, _"noche con luces"_)
-4. Bot pregunta plataforma (Instagram, Mercado Libre, Facebook, WhatsApp, Todos)
+   - Plan básico/trial: `1 - Fondo blanco` / `2 - Fondo negro`
+   - Plan pro/ilimitado: blanco, negro, o texto libre (ej: _"horno de barro"_, _"noche con luces"_)
+4. Bot pregunta plataforma (Instagram, Facebook, WhatsApp, Mercado Libre)
 5. En ~30 segundos recibe imagen con fondo reemplazado + descripción lista para copiar y pegar
 
 **Sin apps, sin logins, sin complicaciones.**
-
----
-
-## Lo que Devuelve el Bot por Plataforma
-
-| Plataforma    | Imagen                         | Descripción                               |
-|---------------|--------------------------------|-------------------------------------------|
-| Instagram     | 1080x1080 cuadrada             | Corta, emojis, hashtags                   |
-| Mercado Libre | Fondo blanco profesional       | Título SEO + bullet points técnicos       |
-| Facebook      | 1200x630 horizontal            | Más larga, tono familiar, precio incluido |
-
----
-
-## Flujo Técnico Completo
-
-```
-Cliente manda foto + descripción por WhatsApp
-        ↓
-Webhook recibe (Twilio / Meta WhatsApp API)
-        ↓
-Bot pregunta plataforma destino
-        ↓
-Cliente elige (Instagram / ML / Facebook / Todos)
-        ↓
-Backend llama OpenAI API (DALL-E + GPT-4)
-        ↓
-Genera imagen optimizada por plataforma + descripción
-        ↓
-Bot devuelve todo al cliente automáticamente
-        ↓
-Cliente copia y pega directo
-```
-
----
-
-## Flujo de Cobro
-
-```
-Bot detecta suscripción vencida
-        ↓
-Manda mensaje automático:
-"Tu plan venció 🔴 Renovalo acá para seguir:"
-[Link MercadoPago]
-        ↓
-Cliente paga en 2 minutos
-        ↓
-MercadoPago notifica backend (webhook)
-        ↓
-Bot se reactiva automáticamente
-```
 
 ---
 
@@ -140,44 +82,16 @@ Bot se reactiva automáticamente
 
 ## Stack Técnico
 
-| Componente    | Tecnología                        | Costo                     |
-|---------------|-----------------------------------|---------------------------|
-| Backend       | FastAPI (Python) en Railway       | ~$5 USD/mes               |
-| WhatsApp      | Twilio Sandbox → WhatsApp API     | ~$10 USD/mes              |
-| IA Imágenes   | fal.ai FLUX Kontext (img2img)     | ~$0.05 por imagen         |
-| IA Imágenes   | OpenAI GPT-image-1 (fallback)     | ~$0.04 por imagen         |
-| IA Texto      | OpenAI gpt-4o-mini                | ~$0.001 por descripción   |
-| Pagos         | MercadoPago (webhook automático)  | % por transacción         |
-| DB            | PostgreSQL en Railway             | incluido en plan           |
-| Deploy        | Railway (auto-deploy desde GitHub)| ~$5 USD/mes               |
-
----
-
-## Datos por Usuario en Backend
-
-```java
-{
-  whatsappNumber: "+5491112345678",
-  plan: "STANDARD",
-  plataformas: ["INSTAGRAM", "MERCADOLIBRE"],
-  imagenesUsadas: 12,
-  imagenesLimit: 50,
-  suscripcionActiva: true,
-  vencimiento: "2026-04-14"
-}
-```
-
----
-
-## Tiempo de Desarrollo
-
-| Componente                        | Tiempo   |
-|-----------------------------------|----------|
-| Webhook WhatsApp                  | 1 día    |
-| Integración OpenAI                | 1 día    |
-| Lógica del flujo + plataformas    | 2 días   |
-| MercadoPago suscripción           | 1-2 días |
-| **Total**                         | **~1 semana** |
+| Componente    | Tecnología                          | Costo                     |
+|---------------|-------------------------------------|---------------------------|
+| Backend       | FastAPI (Python) en Railway         | ~$5 USD/mes               |
+| WhatsApp      | Twilio WhatsApp API (+13186484804)  | ~$1.15 USD/mes + uso      |
+| IA Imágenes   | fal.ai FLUX Kontext (img2img)       | ~$0.05 por imagen         |
+| IA Imágenes   | OpenAI GPT-image-1 (fallback)       | ~$0.04 por imagen         |
+| IA Texto      | OpenAI gpt-4o-mini                  | ~$0.001 por descripción   |
+| Pagos         | MercadoPago (webhook automático)    | % por transacción         |
+| DB            | PostgreSQL en Railway               | incluido en plan          |
+| Deploy        | Railway (auto-deploy desde GitHub)  | ~$5 USD/mes               |
 
 ---
 
@@ -185,99 +99,33 @@ Bot se reactiva automáticamente
 
 | Herramienta              | Costo           |
 |--------------------------|-----------------|
-| Twilio WhatsApp API      | $10 USD         |
+| Twilio WhatsApp API      | ~$2 USD         |
 | OpenAI API (100 imgs)    | $5 USD          |
-| Railway deploy           | Gratis          |
+| Railway deploy           | ~$5 USD         |
 | Meta Ads (publicidad)    | $30-50 USD      |
-| **Total**                | **~$45-65 USD/mes** |
+| **Total**                | **~$42-62 USD/mes** |
 
 ---
 
-## Rentabilidad
+## Rentabilidad (en ARS)
 
 ```
-10 clientes plan Starter  → $80 USD  - $65 costos = $15 USD
-10 clientes plan Standard → $180 USD - $65 costos = $115 USD
-20 clientes plan Standard → $360 USD - $65 costos = $295 USD
+10 clientes Plan Básico   → $150.000 ARS/mes
+10 clientes Plan Pro      → $300.000 ARS/mes
+20 clientes Plan Pro      → $600.000 ARS/mes
 ```
-
----
-
-## Estrategia de Publicidad
-
-Antes de lanzar grabás un video:
-
-1. Foto fea de un plato
-2. La mandás al bot por WhatsApp
-3. En 30 segundos llega foto pro + descripción
-4. _"Probalo gratis 7 días"_
-
-**Ad en Instagram apuntando a:**
-- Dueños de restaurantes
-- Vendedores de Mercado Libre
-- Argentina, radio 50km de tu ciudad
-
----
-
-## Identidad
-
-| Elemento        | Detalle                                           |
-|-----------------|---------------------------------------------------|
-| Nombre          | PostIA                                            |
-| Dominio         | postia.com.ar / postia.app                        |
-| Instagram       | @postia o @postia.ar                              |
-| WhatsApp        | PostIA Business                                   |
-| Logo concepto   | Cámara simple + rayo de velocidad                 |
-| Colores         | Naranja/blanco o verde/blanco (destacan en WA)    |
-
----
-
-## Prompt Base del Bot
-
-```
-Tengo esta foto de [nombre del plato/producto].
-Plataforma destino: [Instagram / Mercado Libre / Facebook]
-
-1. Generá una imagen mejorada optimizada para [plataforma]:
-   - Instagram: cuadrada 1080x1080, iluminación cálida, fondo rústico
-   - Mercado Libre: fondo blanco profesional, producto centrado
-   - Facebook: horizontal 1200x630, composición apetitosa
-
-2. Escribí una descripción optimizada para [plataforma]:
-   - Instagram: máximo 3 líneas, emojis, 5 hashtags relevantes
-   - Mercado Libre: título SEO + bullet points con características
-   - Facebook: tono familiar argentino, precio si corresponde
-```
-
----
-
-## Plan de Lanzamiento
-
-| Hito         | Acción                                              |
-|--------------|-----------------------------------------------------|
-| Semana 1     | MVP manual con vecino parrilla (gratis)             |
-| Semana 2     | Bot funcionando WhatsApp + OpenAI                   |
-| Semana 3     | MercadoPago integrado                               |
-| Semana 4     | Primeros 5 clientes pagando                         |
-| Mes 2        | Video antes/después para ads                        |
-| Mes 3        | 20+ clientes recurrentes                            |
 
 ---
 
 ## Checklist Próximos Pasos
 
 ### Producción
-- [ ] Bajar `USOS_GRATIS` de 999 a 3 en `db.py` antes del lanzamiento
-- [ ] Testear flujo de pago completo con tarjetas de prueba MercadoPago
-- [ ] Migrar de Twilio Sandbox a número WhatsApp propio
+- [ ] Testear flujo de pago completo con cuenta de tercero
 - [ ] Dominio propio (postia.app)
 
-### Identidad
-- [ ] Registrar @postia en Instagram
-- [ ] Grabar video demo antes/después para ads
-
 ### Go-to-market
-- [ ] Conseguir 5 clientes piloto
+- [ ] Grabar video demo antes/después para ads
+- [ ] Conseguir primeros 5 clientes piloto
 - [ ] Lanzar ads en Instagram apuntando a emprendedores
 
 ---
@@ -290,13 +138,13 @@ Panel visual: `/admin` (user: `postia`, pass en env var `ADMIN_PASSWORD`)
 Auth: todos los endpoints requieren header `X-Admin-Token: <token>` obtenido via login.
 
 ```
-POST /admin/login          { user, password } → { token }
-GET  /admin/usuarios       Lista usuarios con stats
-POST /admin/cambiar-plan   { phone, plan } → cambia plan
-GET  /admin/consultas      Lista consultas y feedback
-GET  /admin/info           Info DB y usuarios (debug)
-GET  /admin/env            Valor parcial DATABASE_URL (debug)
-GET  /admin/init-db        Fuerza creación de tablas
-GET  /admin/set-pro?phone= Pone número en plan pro
-GET  /admin/set-pro-all    Pone todos en plan pro
+POST   /admin/login               { user, password } → { token }
+GET    /admin/usuarios            Lista usuarios con stats
+POST   /admin/cambiar-plan        { phone, plan } → cambia plan
+DELETE /admin/usuarios/{phone}    Elimina usuario
+GET    /admin/consultas           Lista consultas y feedback
+GET    /admin/info                Info DB y usuarios (debug)
+GET    /admin/init-db             Fuerza creación de tablas
+GET    /admin/set-pro?phone=      Pone número en plan pro
+GET    /admin/set-pro-all         Pone todos en plan pro
 ```
