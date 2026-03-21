@@ -132,6 +132,23 @@ def _get(phone: str) -> dict | None:
         return _row_to_dict(cur, row) if row else None
 
 
+def registrar_visitante(phone: str):
+    """Registra el primer contacto del usuario si no existe todavía."""
+    if _get(phone) is not None:
+        return
+    ph = _placeholder()
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            f"INSERT INTO suscripciones (phone, estado) VALUES ({ph}, {ph}) ON CONFLICT (phone) DO NOTHING",
+            (phone, "visitante")
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def verificar_acceso(phone: str) -> dict:
     ph = _placeholder()
     row = _get(phone)

@@ -550,6 +550,7 @@ async def webhook(
 
     # Primer contacto: cualquier mensaje de un usuario nuevo sin sesion
     if not session and int(NumMedia or 0) == 0:
+        db.registrar_visitante(From)
         _set_session(From, {"state": "welcomed"})
         return twiml(
             "Hola! Soy *PostIA*.\n\n"
