@@ -260,6 +260,18 @@ def get_usuarios() -> list:
         conn.close()
 
 
+def eliminar_usuario(phone: str):
+    ph = _placeholder()
+    conn = _get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(f"DELETE FROM suscripciones WHERE phone={ph}", (phone,))
+        cur.execute(f"DELETE FROM sessions WHERE phone={ph}", (phone,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def cambiar_plan(phone: str, plan: str, fotos: int):
     ph = _placeholder()
     conn = _get_conn()

@@ -564,13 +564,16 @@ async def webhook(
         acceso = db.verificar_acceso(From)
         if not acceso["permitido"]:
             links = pagos.crear_links_todos_los_planes(From)
-            msg = acceso["mensaje"] + "\n\nEleги tu plan:"
+            print(f"[pagos] links generados para {From}: {list(links.keys())}")
+            msg = acceso["mensaje"] + "\n\nElegi tu plan:"
             if "basico" in links:
-                msg += f"\n\n🔹 *Plan Basico* — 30 fotos/mes — $2.999\n{links['basico']}"
+                msg += f"\n\n🔹 *Plan Basico* — 30 fotos/mes — $15.000/mes\n{links['basico']}"
             if "pro" in links:
-                msg += f"\n\n🔸 *Plan Pro* — 100 fotos/mes — $5.999\n{links['pro']}"
+                msg += f"\n\n🔸 *Plan Pro* — 100 fotos/mes — $30.000/mes\n{links['pro']}"
             if "ilimitado" in links:
-                msg += f"\n\n⭐ *Plan Ilimitado* — sin limite — $9.999\n{links['ilimitado']}"
+                msg += f"\n\n⭐ *Plan Ilimitado* — sin limite — $50.000/mes\n{links['ilimitado']}"
+            if not links:
+                msg += "\n\nEscribi *ayuda* para contactarnos y activar tu plan."
             return twiml(msg)
 
         _set_session(From, {
@@ -603,13 +606,16 @@ async def webhook(
         acceso = db.verificar_acceso(From)
         if not acceso["permitido"]:
             links = pagos.crear_links_todos_los_planes(From)
+            print(f"[pagos] links generados para {From}: {list(links.keys())}")
             msg = acceso["mensaje"] + "\n\nElegi tu plan:"
             if "basico" in links:
-                msg += f"\n\n🔹 *Plan Basico* — 30 fotos/mes — $2.999\n{links['basico']}"
+                msg += f"\n\n🔹 *Plan Basico* — 30 fotos/mes — $15.000/mes\n{links['basico']}"
             if "pro" in links:
-                msg += f"\n\n🔸 *Plan Pro* — 100 fotos/mes — $5.999\n{links['pro']}"
+                msg += f"\n\n🔸 *Plan Pro* — 100 fotos/mes — $30.000/mes\n{links['pro']}"
             if "ilimitado" in links:
-                msg += f"\n\n⭐ *Plan Ilimitado* — sin limite — $9.999\n{links['ilimitado']}"
+                msg += f"\n\n⭐ *Plan Ilimitado* — sin limite — $50.000/mes\n{links['ilimitado']}"
+            if not links:
+                msg += "\n\nEscribi *ayuda* para contactarnos y activar tu plan."
             return twiml(msg)
         aviso = ""
         if acceso["estado"] == "trial":
@@ -767,6 +773,14 @@ def admin_consultas(request: Request, tipo: str = ""):
     if tipo:
         rows = [r for r in rows if r["tipo"] == tipo]
     return {"total": len(rows), "consultas": rows}
+
+
+@app.delete("/admin/usuarios/{phone}")
+async def admin_eliminar_usuario(phone: str, request: Request):
+    if not _check_admin(request):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    db.eliminar_usuario(phone)
+    return {"ok": True, "phone": phone}
 
 
 @app.get("/admin/set-pro-all")

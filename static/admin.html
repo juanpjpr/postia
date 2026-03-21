@@ -343,6 +343,7 @@ function renderClientes() {
     const estadoBadge = `<span class="badge b-${u.estado||'trial'}">${u.estado||'—'}</span>`
     const usos    = u.total_usos || 0
     const fotos   = u.fotos_restantes === -1 ? '∞' : (u.fotos_restantes ?? '—')
+    const inscripto = u.fecha_inicio ? u.fecha_inicio.substring(0,10) : '—'
     const expira  = u.fecha_expiracion ? u.fecha_expiracion.substring(0,10) : '—'
     const costoU  = usos * 50
     const precioU = { basico: 15000, pro: 30000, ilimitado: 50000 }[u.plan] || 0
@@ -369,11 +370,13 @@ function renderClientes() {
         <span class="${margenColor}" style="font-size:0.85rem;font-weight:600">$${(margenU/1000).toFixed(1)}k</span>
         <span class="muted-sm"> (usa ${usoPct}%)</span>
       </td>
+      <td class="muted-sm">${inscripto}</td>
       <td class="muted-sm">${expira}</td>
       <td>
         <div style="display:flex;gap:6px;align-items:center">
           <select class="plan-select" id="sel-${encodePhone(phone)}" onchange="markDirty('${encodePhone(phone)}')">${planesOpts}</select>
           <button class="save-btn" id="btn-${encodePhone(phone)}" onclick="guardarPlan('${u.phone}','${encodePhone(phone)}')" disabled>Guardar</button>
+          <button class="save-btn" style="background:#e53e3e;border-color:#e53e3e" onclick="eliminarUsuario('${u.phone}')">✕</button>
         </div>
       </td>
     </tr>`
@@ -382,7 +385,7 @@ function renderClientes() {
   document.getElementById('table-container').innerHTML = `
     <table>
       <thead><tr>
-        <th>Teléfono</th><th>Estado</th><th>Plan</th><th>Actividad</th><th>Fotos</th><th>Margen real</th><th>Expira</th><th>Cambiar plan</th>
+        <th>Teléfono</th><th>Estado</th><th>Plan</th><th>Actividad</th><th>Fotos</th><th>Margen real</th><th>Inscripto</th><th>Expira</th><th>Cambiar plan</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`
@@ -395,6 +398,15 @@ function encodePhone(phone) {
 function markDirty(id) {
   const btn = document.getElementById('btn-' + id)
   if (btn) btn.disabled = false
+}
+
+async function eliminarUsuario(fullPhone) {
+  if (!confirm(`Eliminar ${fullPhone}?`)) return
+  const phone = encodeURIComponent(fullPhone)
+  const res = await fetch(`/admin/usuarios/${phone}`, { method: 'DELETE', headers: _authHeader() })
+  const data = await res.json()
+  if (data.ok) loadUsuarios()
+  else alert('Error al eliminar')
 }
 
 async function guardarPlan(fullPhone, id) {
