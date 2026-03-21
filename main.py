@@ -14,6 +14,9 @@ import httpx
 import fal_client
 import secrets as _secrets
 import time
+import hmac
+import hashlib
+from urllib.parse import urlparse
 from collections import defaultdict
 import db
 import pagos
@@ -58,12 +61,33 @@ def _rate_ok(phone: str) -> bool:
     _rl[phone].append(now)
     return True
 
+_rl_login: dict = defaultdict(list)
+_RL_LOGIN_MAX = 5
+_RL_LOGIN_WINDOW = 60
+
+def _login_rate_ok(ip: str) -> bool:
+    now = time.time()
+    _rl_login[ip] = [t for t in _rl_login[ip] if now - t < _RL_LOGIN_WINDOW]
+    if len(_rl_login[ip]) >= _RL_LOGIN_MAX:
+        return False
+    _rl_login[ip].append(now)
+    return True
+
 # ── Admin tokens ──────────────────────────────────────────────────────────────
-_admin_tokens: set = set()
+_ADMIN_USER = os.getenv("ADMIN_USER", "")
+_ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+_ADMIN_TOKEN_TTL = 8 * 3600
+_admin_tokens: dict = {}
 
 def _check_admin(request: Request) -> bool:
     token = request.headers.get("X-Admin-Token", "")
-    return bool(token and token in _admin_tokens)
+    if not token:
+        return False
+    expiry = _admin_tokens.get(token)
+    if expiry is None or time.time() > expiry:
+        _admin_tokens.pop(token, None)
+        return False
+    return True
 
 # --- Opciones del flujo ---
 
@@ -181,6 +205,14 @@ def generar_prompt_imagen(descripcion: str, categoria: str, estilo: str, platafo
 
 def _descargar_media_twilio(foto_url: str) -> bytes | None:
     """Descarga imagen de Twilio. Intenta 3 metodos. Retorna bytes o None si falla."""
+    _TWILIO_ALLOWED = ("api.twilio.com", "media.twiliocdn.com", ".twilio.com")
+    try:
+        host = urlparse(foto_url).hostname or ""
+        if not any(host == d or host.endswith(d) for d in _TWILIO_ALLOWED):
+            print(f"[twilio] URL rechazada — dominio no permitido: {host}")
+            return None
+    except Exception:
+        return None
     account_sid = os.getenv("TWILIO_ACCOUNT_SID")
     auth_token = os.getenv("TWILIO_AUTH_TOKEN")
 
@@ -643,6 +675,20 @@ async def webhook(
 @app.post("/pagos/mp")
 async def webhook_mp(request: Request):
     """Webhook que llama MercadoPago cuando se confirma un pago."""
+    mp_secret = os.getenv("MP_WEBHOOK_SECRET", "")
+    if mp_secret:
+        x_signature = request.headers.get("x-signature", "")
+        x_request_id = request.headers.get("x-request-id", "")
+        sig_parts = dict(p.split("=", 1) for p in x_signature.split(";") if "=" in p)
+        ts = sig_parts.get("ts", "")
+        v1 = sig_parts.get("v1", "")
+        data_id = request.query_params.get("data.id", "")
+        if ts and v1:
+            manifest = f"id:{data_id};request-id:{x_request_id};ts:{ts}"
+            expected = hmac.new(mp_secret.encode(), manifest.encode(), hashlib.sha256).hexdigest()
+            if not hmac.compare_digest(expected, v1):
+                print("[mp webhook] firma invalida — posible request falso")
+                return JSONResponse({"error": "invalid signature"}, status_code=401)
     try:
         data = await request.json()
     except Exception:
@@ -671,10 +717,12 @@ async def webhook_mp(request: Request):
             phone, plan = ref.split("|", 1)
         else:
             phone, plan = ref, "basico"
+        if plan not in pagos.PLANES:
+            print(f"[mp] plan invalido: '{plan}' — ignorando")
+            return JSONResponse({"ok": False, "error": "invalid plan"}, status_code=400)
         if phone:
-            from pagos import PLANES
             db.activar_suscripcion(phone, payment_id, plan)
-            info = PLANES.get(plan, {})
+            info = pagos.PLANES.get(plan, {})
             fotos_txt = "ilimitadas" if info.get("fotos") == -1 else f"{info.get('fotos', 30)} fotos"
             enviar_mensaje(
                 phone,
@@ -687,10 +735,15 @@ async def webhook_mp(request: Request):
 
 @app.post("/admin/login")
 async def admin_login(request: Request):
+    client_ip = request.client.host
+    if not _login_rate_ok(client_ip):
+        return JSONResponse({"error": "too many attempts"}, status_code=429)
     data = await request.json()
-    if data.get("user") == "postia" and data.get("password") == "postia":
+    if (_ADMIN_USER and _ADMIN_PASSWORD
+            and data.get("user") == _ADMIN_USER
+            and data.get("password") == _ADMIN_PASSWORD):
         token = _secrets.token_urlsafe(32)
-        _admin_tokens.add(token)
+        _admin_tokens[token] = time.time() + _ADMIN_TOKEN_TTL
         return {"token": token}
     return JSONResponse({"error": "invalid credentials"}, status_code=401)
 

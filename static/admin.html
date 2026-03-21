@@ -461,8 +461,15 @@ function renderConsultas(tipo) {
     </table>`
 }
 
+function escHtml(str) {
+  return str
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#x27;')
+}
+
 function formatMsg(msg) {
-  return msg
+  const safe = escHtml(msg)
+  return safe
     .replace(/muy buena/g, '<span class="cal-muybuena">muy buena</span>')
     .replace(/Calificacion: buena/g, 'Calificacion: <span class="cal-buena">buena</span>')
     .replace(/Calificacion: mala/g, 'Calificacion: <span class="cal-mala">mala</span>')
