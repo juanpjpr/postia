@@ -1174,8 +1174,8 @@
 <!-- TICKER -->
 <div class="ticker">
   <span class="ticker-inner">
-    TUS FOTOS ESTAN COSTANDO VENTAS &nbsp;·&nbsp; LA IA MEJORA TU IMAGEN EN 30 SEG &nbsp;·&nbsp; INSTAGRAM &nbsp;·&nbsp; MERCADO LIBRE &nbsp;·&nbsp; FACEBOOK &nbsp;·&nbsp; WHATSAPP &nbsp;·&nbsp; SIN APPS, SOLO WHATSAPP &nbsp;·&nbsp; 5 PUBLICACIONES GRATIS &nbsp;·&nbsp;
-    TUS FOTOS ESTAN COSTANDO VENTAS &nbsp;·&nbsp; LA IA MEJORA TU IMAGEN EN 30 SEG &nbsp;·&nbsp; INSTAGRAM &nbsp;·&nbsp; MERCADO LIBRE &nbsp;·&nbsp; FACEBOOK &nbsp;·&nbsp; WHATSAPP &nbsp;·&nbsp; SIN APPS, SOLO WHATSAPP &nbsp;·&nbsp; 5 PUBLICACIONES GRATIS &nbsp;·&nbsp;
+    TUS FOTOS ESTAN COSTANDO VENTAS &nbsp;·&nbsp; LA IA MEJORA TU IMAGEN EN 30 SEG &nbsp;·&nbsp; INSTAGRAM &nbsp;·&nbsp; MERCADO LIBRE &nbsp;·&nbsp; FACEBOOK &nbsp;·&nbsp; WHATSAPP &nbsp;·&nbsp; SIN APPS, SOLO WHATSAPP &nbsp;·&nbsp; 3 PUBLICACIONES GRATIS &nbsp;·&nbsp;
+    TUS FOTOS ESTAN COSTANDO VENTAS &nbsp;·&nbsp; LA IA MEJORA TU IMAGEN EN 30 SEG &nbsp;·&nbsp; INSTAGRAM &nbsp;·&nbsp; MERCADO LIBRE &nbsp;·&nbsp; FACEBOOK &nbsp;·&nbsp; WHATSAPP &nbsp;·&nbsp; SIN APPS, SOLO WHATSAPP &nbsp;·&nbsp; 3 PUBLICACIONES GRATIS &nbsp;·&nbsp;
   </span>
 </div>
 
@@ -1371,8 +1371,8 @@
     <div class="step">
       <div class="step-num">02</div>
       <div class="step-body">
-        <h3>Elegi el estilo</h3>
-        <p>Tres opciones: <strong>Realista</strong> (mejora tu foto), <strong>Modo IA</strong> (imagen llamativa generada) o <strong>Fondo blanco/negro</strong> (fondo limpio profesional).</p>
+        <h3>Elegi categoria y fondo</h3>
+        <p>El bot te pregunta el tipo de producto y el fondo que queres: <strong>blanco</strong> o <strong>negro</strong>. Con plan Pro podés describir el fondo libremente.</p>
       </div>
     </div>
     <div class="step">
@@ -1459,7 +1459,7 @@
     </div>
     <div class="faq-item">
       <h4>Que pasa si no me gusta el resultado?</h4>
-      <p>Podes pedirlo de nuevo con otro estilo. Las 5 publicaciones de prueba son gratis, sin tarjeta.</p>
+      <p>Podes pedirlo de nuevo con otro estilo. Las 3 publicaciones de prueba son gratis, sin tarjeta.</p>
     </div>
   </div>
 </section>
@@ -1468,12 +1468,12 @@
 <section class="cta-section">
   <div class="cta-left">
     <div class="section-num">05 — EMPEZA HOY</div>
-    <h2>5 publicaciones gratis.<br>Sin tarjeta.</h2>
-    <p>Tus primeras 5 publicaciones son gratis, sin tarjeta. Despues elegi el plan que mejor se adapta a tu negocio.</p>
+    <h2>3 publicaciones gratis.<br>Sin tarjeta.</h2>
+    <p>Tus primeras 3 publicaciones son gratis, sin tarjeta. Despues elegi el plan que mejor se adapta a tu negocio.</p>
     <a href="https://wa.me/13186484804?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-primary" style="display:inline-block">Probar gratis por WhatsApp →</a>
   </div>
   <div class="cta-right">
-    <p>5 PUBLICACIONES GRATIS · SIN TARJETA</p>
+    <p>3 PUBLICACIONES GRATIS · SIN TARJETA</p>
     <a href="https://wa.me/13186484804?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-white">Abrir WhatsApp →</a>
     <p>Sin instalaciones · Sin registro</p>
   </div>
@@ -1499,20 +1499,18 @@
 
   const MESSAGES = [
     { side: 'user', img: '/static/guitarra_antes.jpg', text: 'guitarra acustica Martin' },
-    { side: 'bot',  text: 'Perfecto! Recibi tu foto de *guitarra acustica Martin*.\n\nQue tipo de producto es?\n1 - Comida\n2 - Ropa\n3 - Electronica\n4 - Hogar\n5 - Belleza\n6 - Otro' },
-    { side: 'user', text: '6' },
-    { side: 'bot',  text: 'Que estilo queres?\n1 - Realista (mejora la foto)\n2 - Modo IA (imagen llamativa)\n3 - Fondo blanco/negro' },
+    { side: 'bot',  text: 'Recibi tu foto de *guitarra acustica Martin*.\n\nQue tipo de producto es?\n1 - Comida\n2 - Ropa\n3 - Electronica\n4 - Hogar\n5 - Belleza\n6 - Otro' },
     { side: 'user', text: '3' },
-    { side: 'bot',  text: 'Que color de fondo queres?\n1 - Blanco (ideal para Mercado Libre)\n2 - Negro (ideal para electronica y premium)' },
+    { side: 'bot',  text: 'Que fondo queres?\n1 - Blanco\n2 - Negro' },
     { side: 'user', text: '1' },
-    { side: 'bot',  text: 'Donde vas a publicar?\n1 - Instagram\n2 - Mercado Libre\n3 - Facebook\n4 - WhatsApp\n5 - Todos' },
-    { side: 'user', text: '2' },
-    { side: 'bot',  text: 'Generando tu contenido... en unos segundos te llega.' },
+    { side: 'bot',  text: 'Donde vas a publicar?\n1 - Instagram\n2 - Facebook\n3 - WhatsApp\n4 - Mercado Libre' },
+    { side: 'user', text: '4' },
+    { side: 'bot',  text: 'Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.' },
     { side: 'bot',  img: '/static/guitarra_despues.jpg', text: '*Mercado Libre*\n\nTITULO: Guitarra Acustica Martin Dreadnought Natural\n- Tapa de madera maciza, sonido cálido y proyectado\n- Clavijero metálico de alta precision\n- Ideal para principiantes y nivel intermedio\n- Excelente estado, lista para tocar' },
   ];
 
   // Delays in ms between each step
-  const DELAYS = [300, 1400, 2800, 3800, 5000, 6000, 7000, 8000, 9000, 9800, 13000];
+  const DELAYS = [300, 1400, 2800, 3800, 5000, 6000, 7000, 8000, 9800, 13000];
 
   function addTyping() {
     const el = document.createElement('div');
