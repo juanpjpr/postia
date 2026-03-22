@@ -306,17 +306,36 @@ def generar_imagen(descripcion: str, categoria: str, fondo_desc: str, plataforma
         # Si no se pudo descargar, cae al modo generativo
 
     prompt = generar_prompt_imagen(descripcion, categoria, fondo_desc, plataforma, negocio_desc=negocio_desc)
-    response = openai.images.generate(
-        model="gpt-image-1",
-        prompt=prompt,
-        size=size,
-        quality="low",
-    )
-    img_data = base64.b64decode(response.data[0].b64_json)
-    filename = f"{uuid.uuid4().hex}.png"
-    with open(os.path.join("static", filename), "wb") as f:
-        f.write(img_data)
-    return f"{BASE_URL}/static/{filename}"
+    try:
+        response = openai.images.generate(
+            model="gpt-image-1",
+            prompt=prompt,
+            size=size,
+            quality="low",
+        )
+        img_data = base64.b64decode(response.data[0].b64_json)
+        filename = f"{uuid.uuid4().hex}.png"
+        with open(os.path.join("static", filename), "wb") as f:
+            f.write(img_data)
+        return f"{BASE_URL}/static/{filename}"
+    except Exception as openai_err:
+        print(f"[openai:imagen] ERROR (fallback a fal): {openai_err}")
+        fal_size = "1536x1024" if plataforma == "Facebook" else "1024x1024"
+        result = fal_client.run(
+            "fal-ai/flux/schnell",
+            arguments={
+                "prompt": prompt,
+                "image_size": fal_size,
+                "num_inference_steps": 4,
+                "num_images": 1,
+            },
+        )
+        fal_img_url = result["images"][0]["url"]
+        img_data = httpx.get(fal_img_url, timeout=60).content
+        filename = f"{uuid.uuid4().hex}.jpg"
+        with open(os.path.join("static", filename), "wb") as f:
+            f.write(img_data)
+        return f"{BASE_URL}/static/{filename}"
 
 
 def investigar_producto_ml(descripcion: str) -> str:
