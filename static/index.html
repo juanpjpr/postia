@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PostIA — Fotos profesionales desde WhatsApp</title>
+  <title>PostIA — Fotos profesionales para vender más desde WhatsApp</title>
+  <meta name="description" content="Mandá una foto de tu producto por WhatsApp y en 30 segundos recibís la imagen con fondo profesional y descripción lista para publicar en Mercado Libre, Instagram o Facebook. Sin apps. Sin diseño.">
+  <meta property="og:title" content="PostIA — Fotos profesionales desde WhatsApp">
+  <meta property="og:description" content="Fotos de productos con fondo profesional en 30 segundos, desde WhatsApp. Sin apps, sin diseño, gratis para empezar.">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -634,7 +637,7 @@
     .wa-info span { font-size: 11px; opacity: 0.75; }
     .wa-chat {
       flex: 1;
-      overflow: hidden;
+      overflow-y: auto;
       padding: 10px 10px 6px;
       display: flex;
       flex-direction: column;
@@ -1116,6 +1119,79 @@
       .carousel-img:last-child { border-bottom: none; }
       .gallery-header { padding: 0 20px 30px; }
       .carousel-controls { padding: 14px 20px; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── PRICING ANCHOR ── */
+    .pricing-anchor {
+      font-size: 16px;
+      color: #8e8e8e;
+      margin-top: 12px;
+      margin-bottom: 0;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    /* ── TESTIMONIOS ── */
+    .testimonials-section {
+      padding: 80px 40px;
+      border-bottom: var(--border);
+      background: white;
+    }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 50px;
+    }
+    .testimonial-card {
+      padding: 28px 24px;
+      border: var(--border);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .testimonial-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .testimonial-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--ig);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 17px;
+      color: white;
+      flex-shrink: 0;
+    }
+    .testimonial-meta strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    .testimonial-meta span {
+      font-size: 12px;
+      color: #8e8e8e;
+    }
+    .testimonial-stars {
+      color: #f5a623;
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+    .testimonial-quote {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.65;
+      font-style: italic;
     }
   </style>
 </head>
@@ -1126,7 +1202,7 @@
   <div class="logo">Post<span>IA</span></div>
   <div class="nav-links">
     <a href="#galeria">Ejemplos</a>
-    <a href="#como">Como funciona</a>
+    <a href="#como">Cómo funciona</a>
     <a href="#planes">Planes</a>
   </div>
   <a href="https://wa.me/13186484804?text=Hola!%20quiero%20probar%20PostIA" class="nav-cta">Empezar gratis</a>
@@ -1136,9 +1212,9 @@
 <section class="hero">
   <div class="hero-left">
     <div class="hero-tag">⚡ Sin apps. Solo WhatsApp.</div>
-    <h1>Deja tus fotos<br>mas profesionales.<br><span class="line-orange">Sin vuelta.</span></h1>
+    <h1>Dejá tus fotos<br>más profesionales.<br><span class="line-orange">Sin vuelta.</span></h1>
     <p class="hero-sub">
-      Manda una foto por WhatsApp y en 30 segundos tenes imagen mejorada con IA y descripcion lista para publicar. Rapido, simple, sin complicaciones.
+      Mandá una foto por WhatsApp y en 30 segundos tenés imagen mejorada con IA y descripción lista para publicar. Rápido, simple, sin complicaciones.
     </p>
     <div class="hero-btns">
       <a href="https://wa.me/13186484804?text=Hola!%20quiero%20probar%20PostIA" class="btn-primary">Probar gratis →</a>
@@ -1159,7 +1235,7 @@
         <div class="wa-avatar">P</div>
         <div class="wa-info">
           <strong>PostIA</strong>
-          <span>en linea</span>
+          <span>en línea</span>
         </div>
       </div>
       <div class="wa-chat" id="waChat"></div>
@@ -1183,7 +1259,7 @@
 <div class="stats-bar">
   <div class="stat">
     <div class="stat-num">+<span>3x</span></div>
-    <div class="stat-label">mas interacciones con imagenes profesionales</div>
+    <div class="stat-label">más interacciones con imágenes profesionales</div>
   </div>
   <div class="stat">
     <div class="stat-num"><span>30</span>seg</div>
@@ -1253,7 +1329,7 @@
     <div>
       <div class="section-num">01 — RESULTADOS</div>
       <h2>Fotos reales.<br>Tuyas, mejoradas.</h2>
-      <p class="gallery-sub">Esto es lo que PostIA hace con una foto comun del celu.</p>
+      <p class="gallery-sub">Esto es lo que PostIA hace con una foto común del celu.</p>
     </div>
   </div>
 
@@ -1268,8 +1344,8 @@
           </div>
           <div class="ba-arrow-mid">→</div>
           <div class="ba-img-wrap">
-            <img src="/static/guitarra_despues.jpg" alt="Guitarra despues">
-            <span class="ba-label after">Despues</span>
+            <img src="/static/guitarra_despues.jpg" alt="Guitarra después">
+            <span class="ba-label after">Después</span>
           </div>
         </div>
         <div class="ba-caption">Guitarra · Fondo blanco profesional</div>
@@ -1283,8 +1359,8 @@
           </div>
           <div class="ba-arrow-mid">→</div>
           <div class="ba-img-wrap">
-            <img src="/static/despues_top.jpg" alt="Remera despues">
-            <span class="ba-label after">Despues</span>
+            <img src="/static/despues_top.jpg" alt="Remera después">
+            <span class="ba-label after">Después</span>
           </div>
         </div>
         <div class="ba-caption">Remera · Fondo blanco profesional</div>
@@ -1298,8 +1374,8 @@
           </div>
           <div class="ba-arrow-mid">→</div>
           <div class="ba-img-wrap">
-            <img src="/static/despues_zapa.jpg" alt="Zapatilla despues">
-            <span class="ba-label after">Despues</span>
+            <img src="/static/despues_zapa.jpg" alt="Zapatilla después">
+            <span class="ba-label after">Después</span>
           </div>
         </div>
         <div class="ba-caption">Zapatilla · Fondo blanco profesional</div>
@@ -1328,7 +1404,7 @@
       <p>Saca el fondo de cualquier foto y dejalo blanco o negro, listo para Mercado Libre, tu catalogo o tu tienda online. Sin Photoshop, sin experiencia, desde WhatsApp.</p>
       <ul class="fondo-bullets">
         <li>✓ Fondo blanco — ideal para Mercado Libre y tiendas online</li>
-        <li>✓ Fondo negro — ideal para productos premium y electronica</li>
+        <li>✓ Fondo negro — ideal para productos premium y electrónica</li>
         <li>✓ El producto queda identico, solo cambia el fondo</li>
       </ul>
       <a href="https://wa.me/13186484804?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-primary">Probarlo gratis →</a>
@@ -1341,7 +1417,7 @@
         </div>
         <div class="fondo-arrow">→</div>
         <div class="fondo-img-wrap">
-          <img src="/static/guitarra_despues.jpg" alt="Despues">
+          <img src="/static/guitarra_despues.jpg" alt="Después">
           <span class="fondo-img-label despues">Despues</span>
         </div>
       </div>
@@ -1354,10 +1430,51 @@
   </div>
 </section>
 
+<!-- TESTIMONIOS -->
+<section class="testimonials-section">
+  <div class="section-num">02B — LO QUE DICEN</div>
+  <h2>Vendedores reales.<br>Resultados reales.</h2>
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <div class="testimonial-avatar">M</div>
+        <div class="testimonial-meta">
+          <strong>Mauri_indumentaria</strong>
+          <span>Vende ropa en Mercado Libre</span>
+        </div>
+      </div>
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-quote">"Lo probé con mis remeras y el resultado fue increíble. Antes mis fotos eran un desastre, las subía igual y no vendía nada. Ahora con el fondo blanco se ven re prolijas. En serio vale la pena."</p>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <div class="testimonial-avatar">C</div>
+        <div class="testimonial-meta">
+          <strong>Caro.accesorios</strong>
+          <span>Vende bisutería en Instagram</span>
+        </div>
+      </div>
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-quote">"Yo no sé nada de diseño ni Photoshop. Le mandé una foto por WhatsApp y en menos de un minuto me llegó la imagen y la descripción lista para pegar en Instagram. No lo podía creer."</p>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <div class="testimonial-avatar">R</div>
+        <div class="testimonial-meta">
+          <strong>Rodri.electroshop</strong>
+          <span>Vende electrónica por WhatsApp</span>
+        </div>
+      </div>
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-quote">"Tengo un local y subo muchos productos por día. Antes tardaba horas editando fotos. Con PostIA lo hago en minutos. Ya no me imagino sin esto para el negocio."</p>
+    </div>
+  </div>
+</section>
+
 <!-- COMO FUNCIONA -->
 <section class="how-section" id="como">
   <div class="how-header">
-    <div class="section-num">03 — COMO FUNCIONA</div>
+    <div class="section-num">03 — CÓMO FUNCIONA</div>
     <h2>Tres pasos. Sin complicaciones.</h2>
   </div>
   <div class="steps-grid">
@@ -1371,15 +1488,15 @@
     <div class="step">
       <div class="step-num">02</div>
       <div class="step-body">
-        <h3>Elegi categoria y fondo</h3>
-        <p>El bot te pregunta el tipo de producto y el fondo que queres: <strong>blanco</strong> o <strong>negro</strong>. Con plan Pro podés describir el fondo libremente.</p>
+        <h3>Elegí categoría y fondo</h3>
+        <p>El bot te pregunta el tipo de producto y el fondo que querés: <strong>blanco</strong> o <strong>negro</strong>. Con plan Pro podés describir el fondo libremente.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">03</div>
       <div class="step-body">
         <h3>Recibis todo listo</h3>
-        <p>En 30 segundos llega la imagen mejorada y la descripcion lista para copiar y pegar.</p>
+        <p>En 30 segundos llega la imagen mejorada y la descripción lista para copiar y pegar.</p>
       </div>
     </div>
   </div>
@@ -1389,9 +1506,10 @@
 <section class="pricing-section" id="planes">
   <div class="section-num">03 — PLANES</div>
   <h2>Simple y sin sorpresas.</h2>
+  <p class="pricing-anchor">Un fotógrafo cobra entre $15.000 y $30.000 por sesión. Con PostIA pagás lo mismo por un mes entero de publicaciones ilimitadas.</p>
   <div class="pricing-grid">
     <div class="plan">
-      <div class="plan-tag">Basico</div>
+      <div class="plan-tag">Básico</div>
       <div class="plan-name">Para empezar</div>
       <div class="plan-price"><sub>$</sub>15.000</div>
       <div class="plan-period">ARS por mes</div>
@@ -1404,7 +1522,7 @@
       <a href="https://wa.me/13186484804?text=Quiero%20el%20plan%20Basico" class="plan-btn">Empezar →</a>
     </div>
     <div class="plan featured">
-      <div class="plan-tag">★ Mas popular</div>
+      <div class="plan-tag">★ Más popular</div>
       <div class="plan-name">Para crecer</div>
       <div class="plan-price"><sub>$</sub>30.000</div>
       <div class="plan-period">ARS por mes</div>
@@ -1442,24 +1560,24 @@
       <p>No. Todo funciona desde WhatsApp, que ya tenes en tu celular. Sin descargas ni registros.</p>
     </div>
     <div class="faq-item">
-      <h4>Cuanto tarda en generar?</h4>
-      <p>Entre 20 y 40 segundos. Te manda un mensaje de confirmacion y cuando esta listo te llega todo.</p>
+      <h4>¿Cuánto tarda en generar?</h4>
+      <p>Entre 20 y 40 segundos. Te manda un mensaje de confirmación y cuando está listo te llega todo.</p>
     </div>
     <div class="faq-item">
-      <h4>Sirve para cualquier producto?</h4>
-      <p>Si. Comida, ropa, electronica, hogar, belleza y mas. El bot te guia para elegir la mejor configuracion.</p>
+      <h4>¿Sirve para cualquier producto?</h4>
+      <p>Sí. Comida, ropa, electrónica, hogar, belleza y más. El bot te guía para elegir la mejor configuración.</p>
     </div>
     <div class="faq-item">
-      <h4>Como pago?</h4>
-      <p>A traves de MercadoPago. Tarjeta de credito, debito, transferencia o efectivo.</p>
+      <h4>¿Cómo pago?</h4>
+      <p>A través de MercadoPago. Tarjeta de crédito, débito, transferencia o efectivo.</p>
     </div>
     <div class="faq-item">
-      <h4>Puedo cancelar cuando quiera?</h4>
-      <p>Si, sin permanencia ni penalidad. Cancelas cuando quieras directamente desde WhatsApp.</p>
+      <h4>¿Puedo cancelar cuando quiera?</h4>
+      <p>Sí, sin permanencia ni penalidad. Cancelás cuando querás directamente desde WhatsApp.</p>
     </div>
     <div class="faq-item">
-      <h4>Que pasa si no me gusta el resultado?</h4>
-      <p>Podes pedirlo de nuevo con otro estilo. Las 3 publicaciones de prueba son gratis, sin tarjeta.</p>
+      <h4>¿Qué pasa si no me gusta el resultado?</h4>
+      <p>Podés pedirlo de nuevo con otro estilo. Las 3 publicaciones de prueba son gratis, sin tarjeta.</p>
     </div>
   </div>
 </section>
@@ -1469,7 +1587,7 @@
   <div class="cta-left">
     <div class="section-num">05 — EMPEZA HOY</div>
     <h2>3 publicaciones gratis.<br>Sin tarjeta.</h2>
-    <p>Tus primeras 3 publicaciones son gratis, sin tarjeta. Despues elegi el plan que mejor se adapta a tu negocio.</p>
+    <p>Tus primeras 3 publicaciones son gratis, sin tarjeta. Después elegí el plan que mejor se adapta a tu negocio.</p>
     <a href="https://wa.me/13186484804?text=Hola!%20quiero%20probar%20PostIA%20gratis" class="btn-primary" style="display:inline-block">Probar gratis por WhatsApp →</a>
   </div>
   <div class="cta-right">
@@ -1501,19 +1619,19 @@
   };
 
   const MESSAGES = [
-    { side: 'user', img: '/static/guitarra_antes.jpg', text: 'guitarra acustica Martin' },
-    { side: 'bot',  text: 'Recibi tu foto de *guitarra acustica Martin*.\n\nQue tipo de producto es?\n1 - Comida\n2 - Ropa\n3 - Electronica\n4 - Hogar\n5 - Belleza\n6 - Otro' },
-    { side: 'user', text: '3' },
-    { side: 'bot',  text: 'Que fondo queres?\n1 - Blanco\n2 - Negro' },
+    { side: 'user', img: '/static/guitarra_antes.jpg', text: 'guitarra acústica Martin' },
+    { side: 'bot',  text: 'Recibí tu foto de *guitarra acústica Martin* ✅\n\n¿Qué tipo de producto es?\n1 - Comida\n2 - Ropa\n3 - Electrónica\n4 - Hogar\n5 - Belleza\n6 - Otro' },
+    { side: 'user', text: '6' },
+    { side: 'bot',  text: '¿Qué fondo querés?\n1 - Blanco ⬜\n2 - Negro ⬛' },
     { side: 'user', text: '1' },
-    { side: 'bot',  text: 'Donde vas a publicar?\n1 - Instagram\n2 - Facebook\n3 - WhatsApp\n4 - Mercado Libre' },
+    { side: 'bot',  text: '¿Dónde vas a publicar?\n1 - Instagram\n2 - Facebook\n3 - WhatsApp\n4 - Mercado Libre' },
     { side: 'user', text: '4' },
-    { side: 'bot',  text: 'Generando tu contenido... En unos segundos te llega la imagen y descripcion lista.' },
-    { side: 'bot',  img: '/static/guitarra_despues.jpg', text: '*Mercado Libre*\n\nTITULO: Guitarra Acustica Martin Dreadnought Natural\n- Tapa de madera maciza, sonido cálido y proyectado\n- Clavijero metálico de alta precision\n- Ideal para principiantes y nivel intermedio\n- Excelente estado, lista para tocar' },
+    { side: 'bot',  text: '⏳ Generando tu contenido... En unos segundos te llega la imagen y descripción lista.' },
+    { side: 'bot',  img: '/static/guitarra_despues.jpg', text: '✅ *Listo para Mercado Libre*\n\n*Guitarra Acústica Martin Dreadnought Natural*\n— Tapa de madera maciza, sonido cálido\n— Clavijero metálico de alta precisión\n— Ideal para nivel principiante e intermedio\n— Excelente estado, lista para tocar 🎸' },
   ];
 
   // Delays in ms between each step
-  const DELAYS = [300, 1400, 2800, 3800, 5000, 6000, 7000, 8000, 9800, 13000];
+  const DELAYS = [200, 900, 1800, 2600, 3500, 4300, 5100, 5900, 7200];
 
   function addTyping() {
     const el = document.createElement('div');
@@ -1562,7 +1680,7 @@
     });
 
     // Restart after full sequence
-    const restart = setTimeout(runChat, 18000);
+    const restart = setTimeout(runChat, 12000);
     waTimers.push(restart);
   }
 
